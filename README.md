@@ -24,6 +24,20 @@ This will generate a stub called `<interface_name>Stub` in the `<folder_name>_st
 
 **Note:** The directory needs to be part of the `src` sub-tree of your `$GOPATH`.
 
+It's unlikely that you will want to write that statement each time you desire your stub be recreated. Instead, you can use Go's generate functionality. Your interface file might look something like this.
+
+```go
+package example
+
+//go:generate gostub Person
+
+type Person interface {
+	// ...
+}
+```
+
+All you need to do is run the `go generate ./...` command from the current or parent directory and all your stubs will be regenerated.
+
 If you want to run the `gostub` from a different location, you can use the `-s` or `--source` flags to specify the location of the interface.
 
 Example:
