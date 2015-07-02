@@ -7,8 +7,6 @@ import (
 )
 
 func main() {
-	stubber := new(Stubber)
-
 	cli.AppHelpTemplate = helpTemplate
 	app := cli.NewApp()
 	app.Name = "gostub"
@@ -28,7 +26,7 @@ func main() {
 			Usage: "the name of the generated stub. If not specified, the 'Stub' suffix is appended to the interface name in order to form the stub name.",
 		},
 	}
-	app.Action = stubber.Execute
+	app.Action = RunGoStub
 	app.Run(os.Args)
 }
 
