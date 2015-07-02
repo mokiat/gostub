@@ -8,13 +8,22 @@ import (
 	"path/filepath"
 
 	"github.com/codegangsta/cli"
+	"github.com/momchil-atanasov/gostub/generator"
 	"github.com/momchil-atanasov/gostub/util"
 )
 
 func RunGoStub(c *cli.Context) {
 	input, err := parseInput(c)
 	exitOnErr(err)
-	fmt.Printf("Running `gostub` with input: %#v\n", input)
+
+	config, err := prepareGeneratorConfig(input)
+	exitOnErr(err)
+
+	err = os.MkdirAll(path.Dir(input.OutputFilePath), 0755)
+	exitOnErr(err)
+
+	err = generator.Generate(config)
+	exitOnErr(err)
 }
 
 type goStubInput struct {
@@ -64,6 +73,20 @@ func parseInput(c *cli.Context) (goStubInput, error) {
 		StubName:        stubName,
 		OutputFilePath:  outputFileName,
 	}, nil
+}
+
+func prepareGeneratorConfig(input goStubInput) (generator.Config, error) {
+	sourcePackageLocation, err := util.DirToImport(input.SourceDirectory)
+	if err != nil {
+		return generator.Config{}, err
+	}
+	config := generator.Config{}
+	config.SourcePackageLocation = sourcePackageLocation
+	config.SourceInterfaceName = input.InterfaceName
+	config.TargetFilePath = input.OutputFilePath
+	config.TargetPackageName = path.Base(path.Dir(input.OutputFilePath))
+	config.TargetStructName = input.StubName
+	return config, nil
 }
 
 func exitOnErr(err error) {
