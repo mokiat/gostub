@@ -1,6 +1,12 @@
 package generator
 
-import "fmt"
+import (
+	"fmt"
+	"go/ast"
+	"go/format"
+	"go/token"
+	"os"
+)
 
 // Config is used to pass a rather large configuration to the
 // Generate method.
@@ -28,6 +34,57 @@ type Config struct {
 }
 
 func Generate(config Config) error {
-	fmt.Printf("Generating stub using: %#v\n", config)
+	target := newTarget(config.TargetPackageName, config.TargetStructName)
+
+	err := target.Save(config.TargetFilePath)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Stub '%s' successfully created in '%s'.\n", config.TargetStructName, config.TargetFilePath)
+	return nil
+}
+
+func newTarget(pkgName, stubName string) *genTarget {
+	file := &ast.File{
+		Name: ast.NewIdent(pkgName),
+	}
+	stubType := &ast.StructType{
+		Fields: &ast.FieldList{},
+	}
+	file.Decls = append(file.Decls, &ast.GenDecl{
+		Tok: token.TYPE,
+		Specs: []ast.Spec{
+			&ast.TypeSpec{
+				Name: ast.NewIdent(stubName),
+				Type: stubType,
+			},
+		},
+	})
+	return &genTarget{
+		structName:    stubName,
+		astFile:       file,
+		astStructType: stubType,
+	}
+}
+
+type genTarget struct {
+	structName    string
+	astFile       *ast.File
+	astStructType *ast.StructType
+}
+
+func (t *genTarget) Save(filePath string) error {
+	osFile, err := os.Create(filePath)
+	if err != nil {
+		return err
+	}
+	defer osFile.Close()
+
+	err = format.Node(osFile, token.NewFileSet(), t.astFile)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
