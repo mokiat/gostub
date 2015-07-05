@@ -36,9 +36,98 @@ func FuncTypeParamCount(funcType *ast.FuncType) int {
 	return len(funcType.Params.List)
 }
 
+func EachParamInFunc(funcType *ast.FuncType) <-chan *ast.Field {
+	result := make(chan *ast.Field)
+	go func() {
+		if funcType.Params != nil {
+			for _, param := range funcType.Params.List {
+				result <- param
+			}
+		}
+		close(result)
+	}()
+	return result
+}
+
 func FuncTypeResultCount(funcType *ast.FuncType) int {
 	if funcType.Results == nil {
 		return 0
 	}
 	return len(funcType.Results.List)
+}
+
+func EachResultInFunc(funcType *ast.FuncType) <-chan *ast.Field {
+	result := make(chan *ast.Field)
+	go func() {
+		if funcType.Results != nil {
+			for _, param := range funcType.Results.List {
+				result <- param
+			}
+		}
+		close(result)
+	}()
+	return result
+}
+
+func EachDeclarationInFile(file *ast.File) <-chan ast.Decl {
+	result := make(chan ast.Decl)
+	go func() {
+		for _, decl := range file.Decls {
+			result <- decl
+		}
+		close(result)
+	}()
+	return result
+}
+
+func EachGenericDeclarationInFile(file *ast.File) <-chan *ast.GenDecl {
+	result := make(chan *ast.GenDecl)
+	go func() {
+		for decl := range EachDeclarationInFile(file) {
+			if genDecl, ok := decl.(*ast.GenDecl); ok {
+				result <- genDecl
+			}
+		}
+		close(result)
+	}()
+	return result
+}
+
+func EachSpecificationInGenericDeclaration(decl *ast.GenDecl) <-chan ast.Spec {
+	result := make(chan ast.Spec)
+	go func() {
+		for _, spec := range decl.Specs {
+			result <- spec
+		}
+		close(result)
+	}()
+	return result
+}
+
+func EachTypeSpecificationInGenericDeclaration(decl *ast.GenDecl) <-chan *ast.TypeSpec {
+	result := make(chan *ast.TypeSpec)
+	go func() {
+		for spec := range EachSpecificationInGenericDeclaration(decl) {
+			if typeSpec, ok := spec.(*ast.TypeSpec); ok {
+				result <- typeSpec
+			}
+		}
+		close(result)
+	}()
+	return result
+}
+
+func EachInterfaceDeclarationInFile(file *ast.File) <-chan *ast.TypeSpec {
+	result := make(chan *ast.TypeSpec)
+	go func() {
+		for decl := range EachGenericDeclarationInFile(file) {
+			for spec := range EachTypeSpecificationInGenericDeclaration(decl) {
+				if _, ok := spec.Type.(*ast.InterfaceType); ok {
+					result <- spec
+				}
+			}
+		}
+		close(result)
+	}()
+	return result
 }
