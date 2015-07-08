@@ -384,4 +384,48 @@ var _ = Describe("AST", func() {
 			Eventually(specChan).Should(BeClosed())
 		})
 	})
+
+	Describe("EachMethodInInterfaceType", func() {
+		var iFaceType *ast.InterfaceType
+		var firstMethod *ast.Field
+		var outlier *ast.Field
+		var secondMethod *ast.Field
+
+		BeforeEach(func() {
+			firstMethod = &ast.Field{
+				Names: []*ast.Ident{
+					ast.NewIdent("First"),
+				},
+				Type: &ast.FuncType{},
+			}
+			secondMethod = &ast.Field{
+				Names: []*ast.Ident{
+					ast.NewIdent("Second"),
+				},
+				Type: &ast.FuncType{},
+			}
+			outlier = &ast.Field{
+				Names: []*ast.Ident{
+					ast.NewIdent("NotMethod"),
+				},
+				Type: &ast.SelectorExpr{},
+			}
+			iFaceType = &ast.InterfaceType{
+				Methods: &ast.FieldList{
+					List: []*ast.Field{
+						firstMethod,
+						outlier,
+						secondMethod,
+					},
+				},
+			}
+		})
+
+		It("returns all specifications", func() {
+			funcChan := EachMethodInInterfaceType(iFaceType)
+			Ω(<-funcChan).Should(Equal(firstMethod))
+			Ω(<-funcChan).Should(Equal(secondMethod))
+			Eventually(funcChan).Should(BeClosed())
+		})
+	})
 })

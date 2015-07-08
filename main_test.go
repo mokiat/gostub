@@ -24,4 +24,33 @@ var _ = Describe("Main", func() {
 			Ω(assignable).Should(BeTrue())
 		})
 	})
+
+	Describe("NoParamsNoResults", func() {
+		var stub *testables_stubs.NoParamsNoResultsStub
+		var runWasCalled bool
+
+		BeforeEach(func() {
+			stub = new(testables_stubs.NoParamsNoResultsStub)
+			runWasCalled = false
+		})
+
+		It("stub is assignable to interface", func() {
+			_, assignable := interface{}(stub).(testables.NoParamsNoResults)
+			Ω(assignable).Should(BeTrue())
+		})
+
+		It("is possible to stub the behavior", func() {
+			stub.RunStub = func() {
+				runWasCalled = true
+			}
+			stub.Run()
+			Ω(runWasCalled).Should(BeTrue())
+		})
+
+		It("is possible to get call count", func() {
+			stub.Run()
+			stub.Run()
+			Ω(stub.RunCallCount()).Should(Equal(2))
+		})
+	})
 })

@@ -1,11 +1,13 @@
 package generator
 
 import (
+	"errors"
 	"fmt"
 	"go/ast"
-	"go/format"
+	"go/parser"
 	"go/token"
-	"os"
+
+	"github.com/momchil-atanasov/gostub/util"
 )
 
 // Config is used to pass a rather large configuration to the
@@ -36,7 +38,22 @@ type Config struct {
 func Generate(config Config) error {
 	target := newTarget(config.TargetPackageName, config.TargetStructName)
 
-	err := target.Save(config.TargetFilePath)
+	iface, err := findTypeDeclaration(config.SourceInterfaceName, config.SourcePackageLocation)
+	if err != nil {
+		return err
+	}
+
+	iFaceType, isIFace := iface.Type.(*ast.InterfaceType)
+	if !isIFace {
+		return errors.New(fmt.Sprintf("Type '%s' in '%s' is not interface!", config.SourceInterfaceName, config.SourcePackageLocation))
+	}
+
+	err = generateIFace(iFaceType, target)
+	if err != nil {
+		return err
+	}
+
+	err = target.Save(config.TargetFilePath)
 	if err != nil {
 		return err
 	}
@@ -45,46 +62,40 @@ func Generate(config Config) error {
 	return nil
 }
 
-func newTarget(pkgName, stubName string) *genTarget {
-	file := &ast.File{
-		Name: ast.NewIdent(pkgName),
+func generateIFace(iFaceType *ast.InterfaceType, target *genTarget) error {
+	for method := range util.EachMethodInInterfaceType(iFaceType) {
+		source := &genSource{
+			MethodName: method.Names[0].String(),
+			MethodType: method.Type.(*ast.FuncType),
+		}
+		err := target.GenerateMethod(source)
+		if err != nil {
+			return err
+		}
 	}
-	stubType := &ast.StructType{
-		Fields: &ast.FieldList{},
-	}
-	file.Decls = append(file.Decls, &ast.GenDecl{
-		Tok: token.TYPE,
-		Specs: []ast.Spec{
-			&ast.TypeSpec{
-				Name: ast.NewIdent(stubName),
-				Type: stubType,
-			},
-		},
-	})
-	return &genTarget{
-		structName:    stubName,
-		astFile:       file,
-		astStructType: stubType,
-	}
-}
-
-type genTarget struct {
-	structName    string
-	astFile       *ast.File
-	astStructType *ast.StructType
-}
-
-func (t *genTarget) Save(filePath string) error {
-	osFile, err := os.Create(filePath)
-	if err != nil {
-		return err
-	}
-	defer osFile.Close()
-
-	err = format.Node(osFile, token.NewFileSet(), t.astFile)
-	if err != nil {
-		return err
-	}
-
 	return nil
+}
+
+func findTypeDeclaration(name, location string) (*ast.TypeSpec, error) {
+	sourcePath, err := util.ImportToDir(location)
+	if err != nil {
+		return nil, err
+	}
+
+	pkgs, err := parser.ParseDir(token.NewFileSet(), sourcePath, nil, parser.AllErrors)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, pkg := range pkgs {
+		for _, file := range pkg.Files {
+			for spec := range util.EachInterfaceDeclarationInFile(file) {
+				if spec.Name.String() == name {
+					return spec, nil
+				}
+			}
+		}
+	}
+
+	return nil, errors.New(fmt.Sprintf("Could not find interface '%s'.", name))
 }
