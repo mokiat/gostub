@@ -5,8 +5,6 @@ import (
 	"go/format"
 	"go/token"
 	"os"
-
-	"github.com/momchil-atanasov/gostub/util"
 )
 
 func newTarget(pkgName, stubName string) *genTarget {
@@ -31,154 +29,89 @@ type genTarget struct {
 }
 
 func (t *genTarget) GenerateMethod(source *genSource) error {
-	t.createStubField(source)
+	t.createMethodStubField(source)
 	t.createMutexField(source)
 	t.createArgsForCallField(source)
-	t.createMethod(source)
+	t.createStubMethod(source)
 	t.createCallCountMethod(source)
+	t.createArgsForCallMethod(source)
 	return nil
 }
 
-func (t *genTarget) createStubField(source *genSource) {
-	field := util.CreateField(source.StubMethodName(), source.MethodType)
-	t.structModel.AddField(field)
+func (t *genTarget) createMethodStubField(source *genSource) {
+	builder := NewMethodStubFieldBuilder()
+	builder.SetFieldName(source.StubMethodName())
+	if source.MethodType.Params != nil {
+		builder.SetParams(source.MethodType.Params.List)
+	}
+	if source.MethodType.Results != nil {
+		builder.SetResults(source.MethodType.Results.List)
+	}
+	t.structModel.AddField(builder.Build())
 }
 
 func (t *genTarget) createMutexField(source *genSource) {
-	alias := t.fileModel.AddImport("sync", "sync")
-	mutexType := &ast.SelectorExpr{
-		X:   ast.NewIdent(alias),
-		Sel: ast.NewIdent("RWMutex"),
-	}
-	field := util.CreateField(source.MutexName(), mutexType)
-	t.structModel.AddField(field)
+	builder := NewMethodMutexFieldBuilder()
+	builder.SetFieldName(source.MutexName())
+	builder.SetMutexType(t.resolveMutexType())
+	t.structModel.AddField(builder.Build())
 }
 
 func (t *genTarget) createArgsForCallField(source *genSource) {
-	argsForCallType := &ast.ArrayType{
-		Elt: &ast.StructType{
-			Fields: &ast.FieldList{},
-		},
+	builder := NewMethodArgsFieldBuilder()
+	builder.SetFieldName(source.ArgsForCallName())
+	if source.MethodType.Params != nil {
+		builder.SetParams(source.MethodType.Params.List)
 	}
-	field := util.CreateField(source.ArgsForCallName(), argsForCallType)
-	t.structModel.AddField(field)
+	t.structModel.AddField(builder.Build())
 }
 
-func (t *genTarget) createMethod(source *genSource) {
-	method := NewMethodModel()
-	method.SetName(source.MethodName)
-	method.SetReceiver(source.StructSelfName(), t.structName)
-	method.SetType(source.MethodType)
-	method.AddStatement(t.createMutexStatement(source, "Lock"))
-	method.AddStatement(t.createMutexDeferStatement(source, "Unlock"))
-	method.AddStatement(&ast.AssignStmt{
-		Lhs: []ast.Expr{
-			&ast.SelectorExpr{
-				X:   ast.NewIdent(source.StructSelfName()),
-				Sel: ast.NewIdent(source.ArgsForCallName()),
-			},
-		},
-		Tok: token.ASSIGN,
-		Rhs: []ast.Expr{
-			&ast.CallExpr{
-				Fun: ast.NewIdent("append"),
-				Args: []ast.Expr{
-					&ast.SelectorExpr{
-						X:   ast.NewIdent(source.StructSelfName()),
-						Sel: ast.NewIdent(source.ArgsForCallName()),
-					},
-					&ast.CompositeLit{
-						Type: &ast.StructType{
-							Fields: &ast.FieldList{},
-						},
-						Elts: []ast.Expr{},
-					},
-				},
-			},
-		},
-	})
-	method.AddStatement(&ast.IfStmt{
-		Cond: &ast.BinaryExpr{
-			X: &ast.SelectorExpr{
-				X:   ast.NewIdent(source.StructSelfName()),
-				Sel: ast.NewIdent(source.StubMethodName()),
-			},
-			Op: token.NEQ,
-			Y:  ast.NewIdent("nil"),
-		},
-		Body: &ast.BlockStmt{
-			List: []ast.Stmt{
-				&ast.ExprStmt{
-					X: &ast.CallExpr{
-						Fun: &ast.SelectorExpr{
-							X:   ast.NewIdent(source.StructSelfName()),
-							Sel: ast.NewIdent(source.StubMethodName()),
-						},
-					},
-				},
-			},
-		},
-	})
-	t.fileModel.AddMethod(method)
+func (t *genTarget) createStubMethod(source *genSource) {
+	builder := NewStubMethodBuilder()
+	builder.SetMethodName(source.MethodName)
+	builder.SetReceiverName(source.StructSelfName())
+	builder.SetReceiverType(t.structName)
+	builder.SetArgsFieldName(source.ArgsForCallName())
+	builder.SetMutexFieldName(source.MutexName())
+	builder.SetStubFieldName(source.StubMethodName())
+	if source.MethodType.Params != nil {
+		builder.SetParams(source.MethodType.Params.List)
+	}
+	if source.MethodType.Results != nil {
+		builder.SetResults(source.MethodType.Results.List)
+	}
+	t.fileModel.AddFunctionDeclaration(builder.Build())
 }
 
 func (t *genTarget) createCallCountMethod(source *genSource) {
-	method := NewMethodModel()
-	method.SetName(source.CallCountMethodName())
-	method.SetReceiver(source.StructSelfName(), t.structName)
-	method.SetType(&ast.FuncType{
-		Params: &ast.FieldList{},
-		Results: &ast.FieldList{
-			List: []*ast.Field{
-				&ast.Field{
-					Type: ast.NewIdent("int"),
-				},
-			},
-		},
-	})
-	method.AddStatement(t.createMutexStatement(source, "RLock"))
-	method.AddStatement(t.createMutexDeferStatement(source, "RUnlock"))
-	method.AddStatement(&ast.ReturnStmt{
-		Results: []ast.Expr{
-			&ast.CallExpr{
-				Fun: ast.NewIdent("len"),
-				Args: []ast.Expr{
-					&ast.SelectorExpr{
-						X:   ast.NewIdent(source.StructSelfName()),
-						Sel: ast.NewIdent(source.ArgsForCallName()),
-					},
-				},
-			},
-		},
-	})
-	t.fileModel.AddMethod(method)
+	builder := NewCountMethodBuilder()
+	builder.SetMethodName(source.CallCountMethodName())
+	builder.SetReceiverName(source.StructSelfName())
+	builder.SetReceiverType(t.structName)
+	builder.SetArgsFieldName(source.ArgsForCallName())
+	builder.SetMutexFieldName(source.MutexName())
+	t.fileModel.AddFunctionDeclaration(builder.Build())
 }
 
-func (t *genTarget) createMutexStatement(source *genSource, action string) ast.Stmt {
-	return &ast.ExprStmt{
-		X: &ast.CallExpr{
-			Fun: &ast.SelectorExpr{
-				X: &ast.SelectorExpr{
-					X:   ast.NewIdent(source.StructSelfName()),
-					Sel: ast.NewIdent(source.MutexName()),
-				},
-				Sel: ast.NewIdent(action),
-			},
-		},
+func (t *genTarget) createArgsForCallMethod(source *genSource) {
+	if source.MethodType.Params.NumFields() == 0 {
+		return
 	}
+	builder := NewArgsMethodBuilder()
+	builder.SetMethodName(source.ArgsForCallMethodName())
+	builder.SetReceiverName(source.StructSelfName())
+	builder.SetReceiverType(t.structName)
+	builder.SetArgsFieldName(source.ArgsForCallName())
+	builder.SetMutexFieldName(source.MutexName())
+	builder.SetParams(source.MethodType.Params.List)
+	t.fileModel.AddFunctionDeclaration(builder.Build())
 }
 
-func (t *genTarget) createMutexDeferStatement(source *genSource, action string) ast.Stmt {
-	return &ast.DeferStmt{
-		Call: &ast.CallExpr{
-			Fun: &ast.SelectorExpr{
-				X: &ast.SelectorExpr{
-					X:   ast.NewIdent(source.StructSelfName()),
-					Sel: ast.NewIdent(source.MutexName()),
-				},
-				Sel: ast.NewIdent(action),
-			},
-		},
+func (t *genTarget) resolveMutexType() ast.Expr {
+	alias := t.fileModel.AddImport("sync", "sync")
+	return &ast.SelectorExpr{
+		X:   ast.NewIdent(alias),
+		Sel: ast.NewIdent("RWMutex"),
 	}
 }
 

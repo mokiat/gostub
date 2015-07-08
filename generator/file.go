@@ -8,20 +8,20 @@ import (
 
 func NewFileModel() *FileModel {
 	return &FileModel{
-		importToAlias: make(map[string]string),
-		aliasToImport: make(map[string]string),
-		structs:       make([]*StructModel, 0),
-		methods:       make([]*MethodModel, 0),
+		importToAlias:        make(map[string]string),
+		aliasToImport:        make(map[string]string),
+		structs:              make([]*StructModel, 0),
+		functionDeclarations: make([]*ast.FuncDecl, 0),
 	}
 }
 
 type FileModel struct {
-	filePackageName string
-	importToAlias   map[string]string
-	aliasToImport   map[string]string
-	aliasCounter    int
-	structs         []*StructModel
-	methods         []*MethodModel
+	filePackageName      string
+	importToAlias        map[string]string
+	aliasToImport        map[string]string
+	aliasCounter         int
+	structs              []*StructModel
+	functionDeclarations []*ast.FuncDecl
 }
 
 func (m *FileModel) SetPackage(name string) {
@@ -60,8 +60,8 @@ func (m *FileModel) AddStructure(declaration *StructModel) {
 	m.structs = append(m.structs, declaration)
 }
 
-func (m *FileModel) AddMethod(declaration *MethodModel) {
-	m.methods = append(m.methods, declaration)
+func (m *FileModel) AddFunctionDeclaration(declaration *ast.FuncDecl) {
+	m.functionDeclarations = append(m.functionDeclarations, declaration)
 }
 
 func (m *FileModel) BuildASTFile() *ast.File {
@@ -91,8 +91,8 @@ func (m *FileModel) BuildASTFile() *ast.File {
 		file.Decls = append(file.Decls, structDeclaration.BuildASTStructDeclaration())
 	}
 
-	for _, methodDeclaration := range m.methods {
-		file.Decls = append(file.Decls, methodDeclaration.BuildASTFuncDecl())
+	for _, functionDeclaration := range m.functionDeclarations {
+		file.Decls = append(file.Decls, functionDeclaration)
 	}
 
 	return file

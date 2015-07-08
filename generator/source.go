@@ -22,6 +22,10 @@ func (s *genSource) CallCountMethodName() string {
 	return s.MethodName + "CallCount"
 }
 
+func (s *genSource) ArgsForCallMethodName() string {
+	return s.MethodName + "ArgsForCall"
+}
+
 func (s *genSource) MutexName() string {
 	return toPrivate(s.MethodName + "Mutex")
 }

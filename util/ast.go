@@ -11,6 +11,16 @@ func CreateField(name string, fieldType ast.Expr) *ast.Field {
 	}
 }
 
+func GetFieldsAsAnonymous(fields []*ast.Field) []*ast.Field {
+	result := make([]*ast.Field, len(fields))
+	for i, field := range fields {
+		result[i] = &ast.Field{
+			Type: field.Type,
+		}
+	}
+	return result
+}
+
 func FieldReuseCount(field *ast.Field) int {
 	if len(field.Names) == 0 {
 		return 1
