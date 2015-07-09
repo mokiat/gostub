@@ -2,11 +2,11 @@ package generator
 
 import "go/ast"
 
-func NewMethodModel() *MethodModel {
-	return &MethodModel{}
+func NewMethodBuilder() *MethodBuilder {
+	return &MethodBuilder{}
 }
 
-type MethodModel struct {
+type MethodBuilder struct {
 	name         string
 	funcType     *ast.FuncType
 	receiverName string
@@ -14,24 +14,24 @@ type MethodModel struct {
 	statements   []ast.Stmt
 }
 
-func (m *MethodModel) SetName(name string) {
+func (m *MethodBuilder) SetName(name string) {
 	m.name = name
 }
 
-func (m *MethodModel) SetReceiver(name, recType string) {
+func (m *MethodBuilder) SetReceiver(name, recType string) {
 	m.receiverName = name
 	m.receiverType = recType
 }
 
-func (m *MethodModel) SetType(funcType *ast.FuncType) {
+func (m *MethodBuilder) SetType(funcType *ast.FuncType) {
 	m.funcType = funcType
 }
 
-func (m *MethodModel) AddStatement(statement ast.Stmt) {
+func (m *MethodBuilder) AddStatement(statement ast.Stmt) {
 	m.statements = append(m.statements, statement)
 }
 
-func (m *MethodModel) BuildASTFuncDecl() *ast.FuncDecl {
+func (m *MethodBuilder) Build() *ast.FuncDecl {
 	body := &ast.BlockStmt{
 		List: []ast.Stmt{},
 	}

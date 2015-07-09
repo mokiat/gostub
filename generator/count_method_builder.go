@@ -55,7 +55,7 @@ func (b *CountMethodBuilder) Build() *ast.FuncDecl {
 	mutexUnlockBuilder.SetMutexField(b.mutexFieldName)
 	mutexUnlockBuilder.SetAction("RUnlock")
 
-	method := NewMethodModel()
+	method := NewMethodBuilder()
 	method.SetName(b.methodName)
 	method.SetReceiver(b.selfName, b.selfType)
 	method.SetType(&ast.FuncType{
@@ -83,5 +83,5 @@ func (b *CountMethodBuilder) Build() *ast.FuncDecl {
 			},
 		},
 	})
-	return method.BuildASTFuncDecl()
+	return method.Build()
 }

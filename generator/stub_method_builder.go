@@ -88,7 +88,7 @@ func (b *StubMethodBuilder) Build() *ast.FuncDecl {
 	mutexUnlockBuilder.SetMutexField(b.mutexFieldName)
 	mutexUnlockBuilder.SetAction("Unlock")
 
-	method := NewMethodModel()
+	method := NewMethodBuilder()
 	method.SetName(b.methodName)
 	method.SetReceiver(b.selfName, b.selfType)
 	method.SetType(&ast.FuncType{
@@ -149,7 +149,7 @@ func (b *StubMethodBuilder) Build() *ast.FuncDecl {
 		Else: b.buildReturnReturnsCode(),
 	})
 
-	return method.BuildASTFuncDecl()
+	return method.Build()
 }
 
 func (b *StubMethodBuilder) buildCallStubMethodCode(args []ast.Expr) *ast.BlockStmt {

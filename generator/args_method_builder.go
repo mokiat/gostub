@@ -68,7 +68,7 @@ func (b *ArgsMethodBuilder) Build() *ast.FuncDecl {
 	mutexUnlockBuilder.SetMutexField(b.mutexFieldName)
 	mutexUnlockBuilder.SetAction("RUnlock")
 
-	method := NewMethodModel()
+	method := NewMethodBuilder()
 	method.SetName(b.methodName)
 	method.SetReceiver(b.selfName, b.selfType)
 	method.SetType(&ast.FuncType{
@@ -100,5 +100,5 @@ func (b *ArgsMethodBuilder) Build() *ast.FuncDecl {
 	method.AddStatement(&ast.ReturnStmt{
 		Results: results,
 	})
-	return method.BuildASTFuncDecl()
+	return method.Build()
 }
