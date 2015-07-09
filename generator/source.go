@@ -6,8 +6,17 @@ import (
 )
 
 type genSource struct {
-	MethodName string
-	MethodType *ast.FuncType
+	MethodName    string
+	MethodParams  []*ast.Field
+	MethodResults []*ast.Field
+}
+
+func (s *genSource) HasParams() bool {
+	return len(s.MethodParams) > 0
+}
+
+func (s *genSource) HasResults() bool {
+	return len(s.MethodResults) > 0
 }
 
 func (s *genSource) StructSelfName() string {
@@ -26,12 +35,20 @@ func (s *genSource) ArgsForCallMethodName() string {
 	return s.MethodName + "ArgsForCall"
 }
 
+func (s *genSource) ReturnsMethodName() string {
+	return s.MethodName + "Returns"
+}
+
 func (s *genSource) MutexName() string {
 	return toPrivate(s.MethodName + "Mutex")
 }
 
 func (s *genSource) ArgsForCallName() string {
 	return toPrivate(s.MethodName + "ArgsForCall")
+}
+
+func (s *genSource) ReturnsName() string {
+	return toPrivate(s.MethodName + "Returns")
 }
 
 func toPrivate(name string) string {

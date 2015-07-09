@@ -110,4 +110,42 @@ var _ = Describe("Main", func() {
 			Ω(argTimeout).Should(BeNumerically("~", 5.5, threshold))
 		})
 	})
+
+	Describe("PrimitiveResults", func() {
+		var stub *testables_stubs.PrimitiveResultsStub
+
+		BeforeEach(func() {
+			stub = new(testables_stubs.PrimitiveResultsStub)
+		})
+
+		It("stub is assignable to interface", func() {
+			_, assignable := interface{}(stub).(testables.PrimitiveResults)
+			Ω(assignable).Should(BeTrue())
+		})
+
+		It("is possible to stub the behavior", func() {
+			stub.UserStub = func() (name string, age int, height float32) {
+				return "John", 31, 1.83
+			}
+			name, age, height := stub.User()
+			Ω(name).Should(Equal("John"))
+			Ω(age).Should(Equal(31))
+			Ω(height).Should(BeNumerically("~", 1.83, threshold))
+		})
+
+		It("is possible to get call count", func() {
+			stub.User()
+			stub.User()
+			Ω(stub.UserCallCount()).Should(Equal(2))
+		})
+
+		It("is possible to stub results", func() {
+			stub.UserReturns("Jack", 53, 1.69)
+
+			name, age, height := stub.User()
+			Ω(name).Should(Equal("Jack"))
+			Ω(age).Should(Equal(53))
+			Ω(height).Should(BeNumerically("~", 1.69, threshold))
+		})
+	})
 })

@@ -64,9 +64,11 @@ func Generate(config Config) error {
 
 func generateIFace(iFaceType *ast.InterfaceType, target *genTarget) error {
 	for method := range util.EachMethodInInterfaceType(iFaceType) {
+		funcType := method.Type.(*ast.FuncType)
 		source := &genSource{
-			MethodName: method.Names[0].String(),
-			MethodType: method.Type.(*ast.FuncType),
+			MethodName:    method.Names[0].String(),
+			MethodParams:  getParams(funcType),
+			MethodResults: getResults(funcType),
 		}
 		err := target.GenerateMethod(source)
 		if err != nil {
@@ -74,6 +76,22 @@ func generateIFace(iFaceType *ast.InterfaceType, target *genTarget) error {
 		}
 	}
 	return nil
+}
+
+func getParams(funcType *ast.FuncType) []*ast.Field {
+	result := []*ast.Field{}
+	for param := range util.EachParamInFunc(funcType) {
+		result = append(result, param)
+	}
+	return result
+}
+
+func getResults(funcType *ast.FuncType) []*ast.Field {
+	result := []*ast.Field{}
+	for param := range util.EachResultInFunc(funcType) {
+		result = append(result, param)
+	}
+	return result
 }
 
 func findTypeDeclaration(name, location string) (*ast.TypeSpec, error) {

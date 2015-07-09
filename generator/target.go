@@ -32,21 +32,25 @@ func (t *genTarget) GenerateMethod(source *genSource) error {
 	t.createMethodStubField(source)
 	t.createMutexField(source)
 	t.createArgsForCallField(source)
+	if source.HasResults() {
+		t.createReturnsField(source)
+	}
 	t.createStubMethod(source)
 	t.createCallCountMethod(source)
-	t.createArgsForCallMethod(source)
+	if source.HasParams() {
+		t.createArgsForCallMethod(source)
+	}
+	if source.HasResults() {
+		t.createReturnsMethod(source)
+	}
 	return nil
 }
 
 func (t *genTarget) createMethodStubField(source *genSource) {
 	builder := NewMethodStubFieldBuilder()
 	builder.SetFieldName(source.StubMethodName())
-	if source.MethodType.Params != nil {
-		builder.SetParams(source.MethodType.Params.List)
-	}
-	if source.MethodType.Results != nil {
-		builder.SetResults(source.MethodType.Results.List)
-	}
+	builder.SetParams(source.MethodParams)
+	builder.SetResults(source.MethodResults)
 	t.structModel.AddField(builder.Build())
 }
 
@@ -60,9 +64,14 @@ func (t *genTarget) createMutexField(source *genSource) {
 func (t *genTarget) createArgsForCallField(source *genSource) {
 	builder := NewMethodArgsFieldBuilder()
 	builder.SetFieldName(source.ArgsForCallName())
-	if source.MethodType.Params != nil {
-		builder.SetParams(source.MethodType.Params.List)
-	}
+	builder.SetParams(source.MethodParams)
+	t.structModel.AddField(builder.Build())
+}
+
+func (t *genTarget) createReturnsField(source *genSource) {
+	builder := NewReturnsFieldBuilder()
+	builder.SetFieldName(source.ReturnsName())
+	builder.SetResults(source.MethodResults)
 	t.structModel.AddField(builder.Build())
 }
 
@@ -72,14 +81,11 @@ func (t *genTarget) createStubMethod(source *genSource) {
 	builder.SetReceiverName(source.StructSelfName())
 	builder.SetReceiverType(t.structName)
 	builder.SetArgsFieldName(source.ArgsForCallName())
+	builder.SetReturnsFieldName(source.ReturnsName())
 	builder.SetMutexFieldName(source.MutexName())
 	builder.SetStubFieldName(source.StubMethodName())
-	if source.MethodType.Params != nil {
-		builder.SetParams(source.MethodType.Params.List)
-	}
-	if source.MethodType.Results != nil {
-		builder.SetResults(source.MethodType.Results.List)
-	}
+	builder.SetParams(source.MethodParams)
+	builder.SetResults(source.MethodResults)
 	t.fileModel.AddFunctionDeclaration(builder.Build())
 }
 
@@ -94,16 +100,24 @@ func (t *genTarget) createCallCountMethod(source *genSource) {
 }
 
 func (t *genTarget) createArgsForCallMethod(source *genSource) {
-	if source.MethodType.Params.NumFields() == 0 {
-		return
-	}
 	builder := NewArgsMethodBuilder()
 	builder.SetMethodName(source.ArgsForCallMethodName())
 	builder.SetReceiverName(source.StructSelfName())
 	builder.SetReceiverType(t.structName)
 	builder.SetArgsFieldName(source.ArgsForCallName())
 	builder.SetMutexFieldName(source.MutexName())
-	builder.SetParams(source.MethodType.Params.List)
+	builder.SetParams(source.MethodParams)
+	t.fileModel.AddFunctionDeclaration(builder.Build())
+}
+
+func (t *genTarget) createReturnsMethod(source *genSource) {
+	builder := NewReturnsMethodBuilder()
+	builder.SetMethodName(source.ReturnsMethodName())
+	builder.SetReceiverName(source.StructSelfName())
+	builder.SetReceiverType(t.structName)
+	builder.SetReturnsFieldName(source.ReturnsName())
+	builder.SetMutexFieldName(source.MutexName())
+	builder.SetResults(source.MethodResults)
 	t.fileModel.AddFunctionDeclaration(builder.Build())
 }
 

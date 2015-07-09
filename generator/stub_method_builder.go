@@ -24,14 +24,15 @@ func NewStubMethodBuilder() *StubMethodBuilder {
 //         // ...
 //     }
 type StubMethodBuilder struct {
-	selfName       string
-	selfType       string
-	methodName     string
-	argsFieldName  string
-	mutexFieldName string
-	stubFieldName  string
-	params         []*ast.Field
-	results        []*ast.Field
+	selfName         string
+	selfType         string
+	methodName       string
+	argsFieldName    string
+	mutexFieldName   string
+	stubFieldName    string
+	returnsFieldName string
+	params           []*ast.Field
+	results          []*ast.Field
 }
 
 func (b *StubMethodBuilder) SetReceiverName(name string) {
@@ -48,6 +49,10 @@ func (b *StubMethodBuilder) SetMethodName(name string) {
 
 func (b *StubMethodBuilder) SetArgsFieldName(name string) {
 	b.argsFieldName = name
+}
+
+func (b *StubMethodBuilder) SetReturnsFieldName(name string) {
+	b.returnsFieldName = name
 }
 
 func (b *StubMethodBuilder) SetMutexFieldName(name string) {
@@ -140,20 +145,60 @@ func (b *StubMethodBuilder) Build() *ast.FuncDecl {
 			Op: token.NEQ,
 			Y:  ast.NewIdent("nil"),
 		},
-		Body: &ast.BlockStmt{
-			List: []ast.Stmt{
-				&ast.ExprStmt{
-					X: &ast.CallExpr{
-						Fun: &ast.SelectorExpr{
-							X:   ast.NewIdent(b.selfName),
-							Sel: ast.NewIdent(b.stubFieldName),
-						},
-						Args: paramSelectors,
-					},
-				},
-			},
-		},
+		Body: b.buildCallStubMethodCode(paramSelectors),
+		Else: b.buildReturnReturnsCode(),
 	})
 
 	return method.BuildASTFuncDecl()
+}
+
+func (b *StubMethodBuilder) buildCallStubMethodCode(args []ast.Expr) *ast.BlockStmt {
+	callExpr := &ast.CallExpr{
+		Fun: &ast.SelectorExpr{
+			X:   ast.NewIdent(b.selfName),
+			Sel: ast.NewIdent(b.stubFieldName),
+		},
+		Args: args,
+	}
+	var stmt ast.Stmt
+	if len(b.results) > 0 {
+		stmt = &ast.ReturnStmt{
+			Results: []ast.Expr{
+				callExpr,
+			},
+		}
+	} else {
+		stmt = &ast.ExprStmt{
+			X: callExpr,
+		}
+
+	}
+	return &ast.BlockStmt{
+		List: []ast.Stmt{
+			stmt,
+		},
+	}
+}
+
+func (b *StubMethodBuilder) buildReturnReturnsCode() ast.Stmt {
+	if len(b.results) == 0 {
+		return nil
+	}
+	resultSelectors := []ast.Expr{}
+	for _, result := range b.results {
+		resultSelectors = append(resultSelectors, &ast.SelectorExpr{
+			X: &ast.SelectorExpr{
+				X:   ast.NewIdent(b.selfName),
+				Sel: ast.NewIdent(b.returnsFieldName),
+			},
+			Sel: ast.NewIdent(result.Names[0].String()),
+		})
+	}
+	return &ast.BlockStmt{
+		List: []ast.Stmt{
+			&ast.ReturnStmt{
+				Results: resultSelectors,
+			},
+		},
+	}
 }
