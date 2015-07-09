@@ -1,5 +1,7 @@
 # GoStub
 
+[![Build Status](https://travis-ci.org/momchil-atanasov/gostub.png)](https://travis-ci.org/momchil-atanasov/gostub)
+
 GoStub is a stubbing tool for the Go programming language.
 
 You can use the tool to create stub implementations of your own Go interfaces. Those stubs can then be used to fake the implementation of a method of the interface or to verify the number of times a given method was called and the arguments that were passed.
