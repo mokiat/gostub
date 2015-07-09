@@ -2,9 +2,9 @@ package generator
 
 import "go/ast"
 
-func NewCountMethodBuilder() *CountMethodBuilder {
+func NewCountMethodBuilder(methodBuilder *MethodBuilder) *CountMethodBuilder {
 	return &CountMethodBuilder{
-		selfName: "stub",
+		methodBuilder: methodBuilder,
 	}
 }
 
@@ -17,48 +17,29 @@ func NewCountMethodBuilder() *CountMethodBuilder {
 //         // ...
 //     }
 type CountMethodBuilder struct {
-	selfName       string
-	selfType       string
-	methodName     string
-	argsFieldName  string
-	mutexFieldName string
+	methodBuilder      *MethodBuilder
+	mutexFieldSelector *ast.SelectorExpr
+	argsFieldSelector  *ast.SelectorExpr
 }
 
-func (b *CountMethodBuilder) SetReceiverName(name string) {
-	b.selfName = name
+func (b *CountMethodBuilder) SetMutexFieldSelector(selector *ast.SelectorExpr) {
+	b.mutexFieldSelector = selector
 }
 
-func (b *CountMethodBuilder) SetReceiverType(name string) {
-	b.selfType = name
-}
-
-func (b *CountMethodBuilder) SetMethodName(name string) {
-	b.methodName = name
-}
-
-func (b *CountMethodBuilder) SetArgsFieldName(name string) {
-	b.argsFieldName = name
-}
-
-func (b *CountMethodBuilder) SetMutexFieldName(name string) {
-	b.mutexFieldName = name
+func (b *CountMethodBuilder) SetArgsFieldSelector(selector *ast.SelectorExpr) {
+	b.argsFieldSelector = selector
 }
 
 func (b *CountMethodBuilder) Build() *ast.FuncDecl {
 	mutexLockBuilder := NewMutexLockBuilder()
-	mutexLockBuilder.SetReceiverName(b.selfName)
-	mutexLockBuilder.SetMutexField(b.mutexFieldName)
+	mutexLockBuilder.SetMutexFieldSelector(b.mutexFieldSelector)
 	mutexLockBuilder.SetAction("RLock")
 
 	mutexUnlockBuilder := NewMutexUnlockBuilder()
-	mutexUnlockBuilder.SetReceiverName(b.selfName)
-	mutexUnlockBuilder.SetMutexField(b.mutexFieldName)
+	mutexUnlockBuilder.SetMutexFieldSelector(b.mutexFieldSelector)
 	mutexUnlockBuilder.SetAction("RUnlock")
 
-	method := NewMethodBuilder()
-	method.SetName(b.methodName)
-	method.SetReceiver(b.selfName, b.selfType)
-	method.SetType(&ast.FuncType{
+	b.methodBuilder.SetType(&ast.FuncType{
 		Params: &ast.FieldList{},
 		Results: &ast.FieldList{
 			List: []*ast.Field{
@@ -68,20 +49,17 @@ func (b *CountMethodBuilder) Build() *ast.FuncDecl {
 			},
 		},
 	})
-	method.AddStatement(mutexLockBuilder.Build())
-	method.AddStatement(mutexUnlockBuilder.Build())
-	method.AddStatement(&ast.ReturnStmt{
+	b.methodBuilder.AddStatement(mutexLockBuilder.Build())
+	b.methodBuilder.AddStatement(mutexUnlockBuilder.Build())
+	b.methodBuilder.AddStatement(&ast.ReturnStmt{
 		Results: []ast.Expr{
 			&ast.CallExpr{
 				Fun: ast.NewIdent("len"),
 				Args: []ast.Expr{
-					&ast.SelectorExpr{
-						X:   ast.NewIdent(b.selfName),
-						Sel: ast.NewIdent(b.argsFieldName),
-					},
+					b.argsFieldSelector,
 				},
 			},
 		},
 	})
-	return method.Build()
+	return b.methodBuilder.Build()
 }

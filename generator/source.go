@@ -27,6 +27,13 @@ func (s *genSource) StubMethodName() string {
 	return s.MethodName + "Stub"
 }
 
+func (s *genSource) StubFieldSelector() *ast.SelectorExpr {
+	return &ast.SelectorExpr{
+		X:   ast.NewIdent(s.StructSelfName()),
+		Sel: ast.NewIdent(s.StubMethodName()),
+	}
+}
+
 func (s *genSource) CallCountMethodName() string {
 	return s.MethodName + "CallCount"
 }
@@ -43,12 +50,33 @@ func (s *genSource) MutexName() string {
 	return toPrivate(s.MethodName + "Mutex")
 }
 
+func (s *genSource) MutexFieldSelector() *ast.SelectorExpr {
+	return &ast.SelectorExpr{
+		X:   ast.NewIdent(s.StructSelfName()),
+		Sel: ast.NewIdent(s.MutexName()),
+	}
+}
+
 func (s *genSource) ArgsForCallName() string {
 	return toPrivate(s.MethodName + "ArgsForCall")
 }
 
+func (s *genSource) ArgsFieldSelector() *ast.SelectorExpr {
+	return &ast.SelectorExpr{
+		X:   ast.NewIdent(s.StructSelfName()),
+		Sel: ast.NewIdent(s.ArgsForCallName()),
+	}
+}
+
 func (s *genSource) ReturnsName() string {
 	return toPrivate(s.MethodName + "Returns")
+}
+
+func (s *genSource) ReturnsFieldSelector() *ast.SelectorExpr {
+	return &ast.SelectorExpr{
+		X:   ast.NewIdent(s.StructSelfName()),
+		Sel: ast.NewIdent(s.ReturnsName()),
+	}
 }
 
 func toPrivate(name string) string {

@@ -6,10 +6,10 @@ import (
 	"github.com/momchil-atanasov/gostub/util"
 )
 
-func NewArgsMethodBuilder() *ArgsMethodBuilder {
+func NewArgsMethodBuilder(methodBuilder *MethodBuilder) *ArgsMethodBuilder {
 	return &ArgsMethodBuilder{
-		selfName: "stub",
-		params:   make([]*ast.Field, 0),
+		methodBuilder: methodBuilder,
+		params:        make([]*ast.Field, 0),
 	}
 }
 
@@ -22,32 +22,18 @@ func NewArgsMethodBuilder() *ArgsMethodBuilder {
 //         // ...
 //     }
 type ArgsMethodBuilder struct {
-	selfName       string
-	selfType       string
-	methodName     string
-	argsFieldName  string
-	mutexFieldName string
-	params         []*ast.Field
+	methodBuilder      *MethodBuilder
+	mutexFieldSelector *ast.SelectorExpr
+	argsFieldSelector  *ast.SelectorExpr
+	params             []*ast.Field
 }
 
-func (b *ArgsMethodBuilder) SetReceiverName(name string) {
-	b.selfName = name
+func (b *ArgsMethodBuilder) SetMutexFieldSelector(selector *ast.SelectorExpr) {
+	b.mutexFieldSelector = selector
 }
 
-func (b *ArgsMethodBuilder) SetReceiverType(name string) {
-	b.selfType = name
-}
-
-func (b *ArgsMethodBuilder) SetMethodName(name string) {
-	b.methodName = name
-}
-
-func (b *ArgsMethodBuilder) SetArgsFieldName(name string) {
-	b.argsFieldName = name
-}
-
-func (b *ArgsMethodBuilder) SetMutexFieldName(name string) {
-	b.mutexFieldName = name
+func (b *ArgsMethodBuilder) SetArgsFieldSelector(selector *ast.SelectorExpr) {
+	b.argsFieldSelector = selector
 }
 
 // SetParams specifies the parameters that the original method
@@ -59,19 +45,14 @@ func (b *ArgsMethodBuilder) SetParams(params []*ast.Field) {
 
 func (b *ArgsMethodBuilder) Build() *ast.FuncDecl {
 	mutexLockBuilder := NewMutexLockBuilder()
-	mutexLockBuilder.SetReceiverName(b.selfName)
-	mutexLockBuilder.SetMutexField(b.mutexFieldName)
+	mutexLockBuilder.SetMutexFieldSelector(b.mutexFieldSelector)
 	mutexLockBuilder.SetAction("RLock")
 
 	mutexUnlockBuilder := NewMutexUnlockBuilder()
-	mutexUnlockBuilder.SetReceiverName(b.selfName)
-	mutexUnlockBuilder.SetMutexField(b.mutexFieldName)
+	mutexUnlockBuilder.SetMutexFieldSelector(b.mutexFieldSelector)
 	mutexUnlockBuilder.SetAction("RUnlock")
 
-	method := NewMethodBuilder()
-	method.SetName(b.methodName)
-	method.SetReceiver(b.selfName, b.selfType)
-	method.SetType(&ast.FuncType{
+	b.methodBuilder.SetType(&ast.FuncType{
 		Params: &ast.FieldList{
 			List: []*ast.Field{
 				util.CreateField("index", ast.NewIdent("int")),
@@ -81,24 +62,21 @@ func (b *ArgsMethodBuilder) Build() *ast.FuncDecl {
 			List: util.GetFieldsAsAnonymous(b.params),
 		},
 	})
-	method.AddStatement(mutexLockBuilder.Build())
-	method.AddStatement(mutexUnlockBuilder.Build())
+	b.methodBuilder.AddStatement(mutexLockBuilder.Build())
+	b.methodBuilder.AddStatement(mutexUnlockBuilder.Build())
 
 	results := []ast.Expr{}
 	for _, param := range b.params {
 		results = append(results, &ast.SelectorExpr{
 			X: &ast.IndexExpr{
-				X: &ast.SelectorExpr{
-					X:   ast.NewIdent(b.selfName),
-					Sel: ast.NewIdent(b.argsFieldName),
-				},
+				X:     b.argsFieldSelector,
 				Index: ast.NewIdent("index"),
 			},
 			Sel: ast.NewIdent(param.Names[0].String()),
 		})
 	}
-	method.AddStatement(&ast.ReturnStmt{
+	b.methodBuilder.AddStatement(&ast.ReturnStmt{
 		Results: results,
 	})
-	return method.Build()
+	return b.methodBuilder.Build()
 }

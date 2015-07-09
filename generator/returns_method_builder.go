@@ -5,10 +5,10 @@ import (
 	"go/token"
 )
 
-func NewReturnsMethodBuilder() *ReturnsMethodBuilder {
+func NewReturnsMethodBuilder(methodBuilder *MethodBuilder) *ReturnsMethodBuilder {
 	return &ReturnsMethodBuilder{
-		selfName: "stub",
-		results:  make([]*ast.Field, 0),
+		methodBuilder: methodBuilder,
+		results:       make([]*ast.Field, 0),
 	}
 }
 
@@ -21,32 +21,18 @@ func NewReturnsMethodBuilder() *ReturnsMethodBuilder {
 //         // ...
 //     }
 type ReturnsMethodBuilder struct {
-	selfName         string
-	selfType         string
-	methodName       string
-	returnsFieldName string
-	mutexFieldName   string
-	results          []*ast.Field
+	methodBuilder        *MethodBuilder
+	mutexFieldSelector   *ast.SelectorExpr
+	returnsFieldSelector *ast.SelectorExpr
+	results              []*ast.Field
 }
 
-func (b *ReturnsMethodBuilder) SetReceiverName(name string) {
-	b.selfName = name
+func (b *ReturnsMethodBuilder) SetMutexFieldSelector(selector *ast.SelectorExpr) {
+	b.mutexFieldSelector = selector
 }
 
-func (b *ReturnsMethodBuilder) SetReceiverType(name string) {
-	b.selfType = name
-}
-
-func (b *ReturnsMethodBuilder) SetMethodName(name string) {
-	b.methodName = name
-}
-
-func (b *ReturnsMethodBuilder) SetReturnsFieldName(name string) {
-	b.returnsFieldName = name
-}
-
-func (b *ReturnsMethodBuilder) SetMutexFieldName(name string) {
-	b.mutexFieldName = name
+func (b *ReturnsMethodBuilder) SetReturnsFieldSelector(selector *ast.SelectorExpr) {
+	b.returnsFieldSelector = selector
 }
 
 // SetResults specifies the results that the original method
@@ -58,36 +44,28 @@ func (b *ReturnsMethodBuilder) SetResults(results []*ast.Field) {
 
 func (b *ReturnsMethodBuilder) Build() *ast.FuncDecl {
 	mutexLockBuilder := NewMutexLockBuilder()
-	mutexLockBuilder.SetReceiverName(b.selfName)
-	mutexLockBuilder.SetMutexField(b.mutexFieldName)
+	mutexLockBuilder.SetMutexFieldSelector(b.mutexFieldSelector)
 	mutexLockBuilder.SetAction("Lock")
 
 	mutexUnlockBuilder := NewMutexUnlockBuilder()
-	mutexUnlockBuilder.SetReceiverName(b.selfName)
-	mutexUnlockBuilder.SetMutexField(b.mutexFieldName)
+	mutexUnlockBuilder.SetMutexFieldSelector(b.mutexFieldSelector)
 	mutexUnlockBuilder.SetAction("Unlock")
 
-	method := NewMethodBuilder()
-	method.SetName(b.methodName)
-	method.SetReceiver(b.selfName, b.selfType)
-	method.SetType(&ast.FuncType{
+	b.methodBuilder.SetType(&ast.FuncType{
 		Params: &ast.FieldList{
 			List: b.results,
 		},
 	})
-	method.AddStatement(mutexLockBuilder.Build())
-	method.AddStatement(mutexUnlockBuilder.Build())
+	b.methodBuilder.AddStatement(mutexLockBuilder.Build())
+	b.methodBuilder.AddStatement(mutexUnlockBuilder.Build())
 
 	resultSelectors := []ast.Expr{}
 	for _, result := range b.results {
 		resultSelectors = append(resultSelectors, ast.NewIdent(result.Names[0].String()))
 	}
-	method.AddStatement(&ast.AssignStmt{
+	b.methodBuilder.AddStatement(&ast.AssignStmt{
 		Lhs: []ast.Expr{
-			&ast.SelectorExpr{
-				X:   ast.NewIdent(b.selfName),
-				Sel: ast.NewIdent(b.returnsFieldName),
-			},
+			b.returnsFieldSelector,
 		},
 		Tok: token.ASSIGN,
 		Rhs: []ast.Expr{
@@ -101,5 +79,5 @@ func (b *ReturnsMethodBuilder) Build() *ast.FuncDecl {
 			},
 		},
 	})
-	return method.Build()
+	return b.methodBuilder.Build()
 }

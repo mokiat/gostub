@@ -7,11 +7,11 @@ import (
 	"github.com/momchil-atanasov/gostub/util"
 )
 
-func NewStubMethodBuilder() *StubMethodBuilder {
+func NewStubMethodBuilder(methodBuilder *MethodBuilder) *StubMethodBuilder {
 	return &StubMethodBuilder{
-		selfName: "stub",
-		params:   make([]*ast.Field, 0),
-		results:  make([]*ast.Field, 0),
+		methodBuilder: methodBuilder,
+		params:        make([]*ast.Field, 0),
+		results:       make([]*ast.Field, 0),
 	}
 }
 
@@ -24,43 +24,29 @@ func NewStubMethodBuilder() *StubMethodBuilder {
 //         // ...
 //     }
 type StubMethodBuilder struct {
-	selfName         string
-	selfType         string
-	methodName       string
-	argsFieldName    string
-	mutexFieldName   string
-	stubFieldName    string
-	returnsFieldName string
-	params           []*ast.Field
-	results          []*ast.Field
+	methodBuilder        *MethodBuilder
+	mutexFieldSelector   *ast.SelectorExpr
+	argsFieldSelector    *ast.SelectorExpr
+	returnsFieldSelector *ast.SelectorExpr
+	stubFieldSelector    *ast.SelectorExpr
+	params               []*ast.Field
+	results              []*ast.Field
 }
 
-func (b *StubMethodBuilder) SetReceiverName(name string) {
-	b.selfName = name
+func (b *StubMethodBuilder) SetMutexFieldSelector(selector *ast.SelectorExpr) {
+	b.mutexFieldSelector = selector
 }
 
-func (b *StubMethodBuilder) SetReceiverType(name string) {
-	b.selfType = name
+func (b *StubMethodBuilder) SetArgsFieldSelector(selector *ast.SelectorExpr) {
+	b.argsFieldSelector = selector
 }
 
-func (b *StubMethodBuilder) SetMethodName(name string) {
-	b.methodName = name
+func (b *StubMethodBuilder) SetReturnsFieldSelector(selector *ast.SelectorExpr) {
+	b.returnsFieldSelector = selector
 }
 
-func (b *StubMethodBuilder) SetArgsFieldName(name string) {
-	b.argsFieldName = name
-}
-
-func (b *StubMethodBuilder) SetReturnsFieldName(name string) {
-	b.returnsFieldName = name
-}
-
-func (b *StubMethodBuilder) SetMutexFieldName(name string) {
-	b.mutexFieldName = name
-}
-
-func (b *StubMethodBuilder) SetStubFieldName(name string) {
-	b.stubFieldName = name
+func (b *StubMethodBuilder) SetStubFieldSelector(selector *ast.SelectorExpr) {
+	b.stubFieldSelector = selector
 }
 
 // SetParams specifies the parameters that the original method
@@ -79,19 +65,14 @@ func (b *StubMethodBuilder) SetResults(results []*ast.Field) {
 
 func (b *StubMethodBuilder) Build() *ast.FuncDecl {
 	mutexLockBuilder := NewMutexLockBuilder()
-	mutexLockBuilder.SetReceiverName(b.selfName)
-	mutexLockBuilder.SetMutexField(b.mutexFieldName)
+	mutexLockBuilder.SetMutexFieldSelector(b.mutexFieldSelector)
 	mutexLockBuilder.SetAction("Lock")
 
 	mutexUnlockBuilder := NewMutexUnlockBuilder()
-	mutexUnlockBuilder.SetReceiverName(b.selfName)
-	mutexUnlockBuilder.SetMutexField(b.mutexFieldName)
+	mutexUnlockBuilder.SetMutexFieldSelector(b.mutexFieldSelector)
 	mutexUnlockBuilder.SetAction("Unlock")
 
-	method := NewMethodBuilder()
-	method.SetName(b.methodName)
-	method.SetReceiver(b.selfName, b.selfType)
-	method.SetType(&ast.FuncType{
+	b.methodBuilder.SetType(&ast.FuncType{
 		Params: &ast.FieldList{
 			List: b.params,
 		},
@@ -99,30 +80,24 @@ func (b *StubMethodBuilder) Build() *ast.FuncDecl {
 			List: util.GetFieldsAsAnonymous(b.results),
 		},
 	})
-	method.AddStatement(mutexLockBuilder.Build())
-	method.AddStatement(mutexUnlockBuilder.Build())
+	b.methodBuilder.AddStatement(mutexLockBuilder.Build())
+	b.methodBuilder.AddStatement(mutexUnlockBuilder.Build())
 
 	paramSelectors := []ast.Expr{}
 	for _, param := range b.params {
 		paramSelectors = append(paramSelectors, ast.NewIdent(param.Names[0].String()))
 	}
 
-	method.AddStatement(&ast.AssignStmt{
+	b.methodBuilder.AddStatement(&ast.AssignStmt{
 		Lhs: []ast.Expr{
-			&ast.SelectorExpr{
-				X:   ast.NewIdent(b.selfName),
-				Sel: ast.NewIdent(b.argsFieldName),
-			},
+			b.argsFieldSelector,
 		},
 		Tok: token.ASSIGN,
 		Rhs: []ast.Expr{
 			&ast.CallExpr{
 				Fun: ast.NewIdent("append"),
 				Args: []ast.Expr{
-					&ast.SelectorExpr{
-						X:   ast.NewIdent(b.selfName),
-						Sel: ast.NewIdent(b.argsFieldName),
-					},
+					b.argsFieldSelector,
 					&ast.CompositeLit{
 						Type: &ast.StructType{
 							Fields: &ast.FieldList{
@@ -136,12 +111,9 @@ func (b *StubMethodBuilder) Build() *ast.FuncDecl {
 		},
 	})
 
-	method.AddStatement(&ast.IfStmt{
+	b.methodBuilder.AddStatement(&ast.IfStmt{
 		Cond: &ast.BinaryExpr{
-			X: &ast.SelectorExpr{
-				X:   ast.NewIdent(b.selfName),
-				Sel: ast.NewIdent(b.stubFieldName),
-			},
+			X:  b.stubFieldSelector,
 			Op: token.NEQ,
 			Y:  ast.NewIdent("nil"),
 		},
@@ -149,15 +121,12 @@ func (b *StubMethodBuilder) Build() *ast.FuncDecl {
 		Else: b.buildReturnReturnsCode(),
 	})
 
-	return method.Build()
+	return b.methodBuilder.Build()
 }
 
 func (b *StubMethodBuilder) buildCallStubMethodCode(args []ast.Expr) *ast.BlockStmt {
 	callExpr := &ast.CallExpr{
-		Fun: &ast.SelectorExpr{
-			X:   ast.NewIdent(b.selfName),
-			Sel: ast.NewIdent(b.stubFieldName),
-		},
+		Fun:  b.stubFieldSelector,
 		Args: args,
 	}
 	var stmt ast.Stmt
@@ -187,10 +156,7 @@ func (b *StubMethodBuilder) buildReturnReturnsCode() ast.Stmt {
 	resultSelectors := []ast.Expr{}
 	for _, result := range b.results {
 		resultSelectors = append(resultSelectors, &ast.SelectorExpr{
-			X: &ast.SelectorExpr{
-				X:   ast.NewIdent(b.selfName),
-				Sel: ast.NewIdent(b.returnsFieldName),
-			},
+			X:   b.returnsFieldSelector,
 			Sel: ast.NewIdent(result.Names[0].String()),
 		})
 	}

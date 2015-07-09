@@ -76,49 +76,48 @@ func (t *genTarget) createReturnsField(source *genSource) {
 }
 
 func (t *genTarget) createStubMethod(source *genSource) {
-	builder := NewStubMethodBuilder()
-	builder.SetMethodName(source.MethodName)
-	builder.SetReceiverName(source.StructSelfName())
-	builder.SetReceiverType(t.structName)
-	builder.SetArgsFieldName(source.ArgsForCallName())
-	builder.SetReturnsFieldName(source.ReturnsName())
-	builder.SetMutexFieldName(source.MutexName())
-	builder.SetStubFieldName(source.StubMethodName())
+	methodBuilder := t.createMethodBuilder(source, source.MethodName)
+	builder := NewStubMethodBuilder(methodBuilder)
+	builder.SetMutexFieldSelector(source.MutexFieldSelector())
+	builder.SetArgsFieldSelector(source.ArgsFieldSelector())
+	builder.SetReturnsFieldSelector(source.ReturnsFieldSelector())
+	builder.SetStubFieldSelector(source.StubFieldSelector())
 	builder.SetParams(source.MethodParams)
 	builder.SetResults(source.MethodResults)
 	t.fileModel.AddFunctionDeclaration(builder.Build())
 }
 
 func (t *genTarget) createCallCountMethod(source *genSource) {
-	builder := NewCountMethodBuilder()
-	builder.SetMethodName(source.CallCountMethodName())
-	builder.SetReceiverName(source.StructSelfName())
-	builder.SetReceiverType(t.structName)
-	builder.SetArgsFieldName(source.ArgsForCallName())
-	builder.SetMutexFieldName(source.MutexName())
+	methodBuilder := t.createMethodBuilder(source, source.CallCountMethodName())
+	builder := NewCountMethodBuilder(methodBuilder)
+	builder.SetMutexFieldSelector(source.MutexFieldSelector())
+	builder.SetArgsFieldSelector(source.ArgsFieldSelector())
 	t.fileModel.AddFunctionDeclaration(builder.Build())
 }
 
 func (t *genTarget) createArgsForCallMethod(source *genSource) {
-	builder := NewArgsMethodBuilder()
-	builder.SetMethodName(source.ArgsForCallMethodName())
-	builder.SetReceiverName(source.StructSelfName())
-	builder.SetReceiverType(t.structName)
-	builder.SetArgsFieldName(source.ArgsForCallName())
-	builder.SetMutexFieldName(source.MutexName())
+	methodBuilder := t.createMethodBuilder(source, source.ArgsForCallMethodName())
+	builder := NewArgsMethodBuilder(methodBuilder)
+	builder.SetMutexFieldSelector(source.MutexFieldSelector())
+	builder.SetArgsFieldSelector(source.ArgsFieldSelector())
 	builder.SetParams(source.MethodParams)
 	t.fileModel.AddFunctionDeclaration(builder.Build())
 }
 
 func (t *genTarget) createReturnsMethod(source *genSource) {
-	builder := NewReturnsMethodBuilder()
-	builder.SetMethodName(source.ReturnsMethodName())
-	builder.SetReceiverName(source.StructSelfName())
-	builder.SetReceiverType(t.structName)
-	builder.SetReturnsFieldName(source.ReturnsName())
-	builder.SetMutexFieldName(source.MutexName())
+	methodBuilder := t.createMethodBuilder(source, source.ReturnsMethodName())
+	builder := NewReturnsMethodBuilder(methodBuilder)
+	builder.SetMutexFieldSelector(source.MutexFieldSelector())
+	builder.SetReturnsFieldSelector(source.ReturnsFieldSelector())
 	builder.SetResults(source.MethodResults)
 	t.fileModel.AddFunctionDeclaration(builder.Build())
+}
+
+func (t *genTarget) createMethodBuilder(source *genSource, name string) *MethodBuilder {
+	builder := NewMethodBuilder()
+	builder.SetName(name)
+	builder.SetReceiver(source.StructSelfName(), t.structName)
+	return builder
 }
 
 func (t *genTarget) resolveMutexType() ast.Expr {

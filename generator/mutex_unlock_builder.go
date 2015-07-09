@@ -16,17 +16,12 @@ func NewMutexUnlockBuilder() *MutexUnlockBuilder {
 //         // ...
 //     }
 type MutexUnlockBuilder struct {
-	receiverName   string
-	mutexFieldName string
-	action         string
+	mutexFieldSelector *ast.SelectorExpr
+	action             string
 }
 
-func (b *MutexUnlockBuilder) SetReceiverName(name string) {
-	b.receiverName = name
-}
-
-func (b *MutexUnlockBuilder) SetMutexField(name string) {
-	b.mutexFieldName = name
+func (b *MutexUnlockBuilder) SetMutexFieldSelector(selector *ast.SelectorExpr) {
+	b.mutexFieldSelector = selector
 }
 
 func (b *MutexUnlockBuilder) SetAction(action string) {
@@ -37,10 +32,7 @@ func (b *MutexUnlockBuilder) Build() ast.Stmt {
 	return &ast.DeferStmt{
 		Call: &ast.CallExpr{
 			Fun: &ast.SelectorExpr{
-				X: &ast.SelectorExpr{
-					X:   ast.NewIdent(b.receiverName),
-					Sel: ast.NewIdent(b.mutexFieldName),
-				},
+				X:   b.mutexFieldSelector,
 				Sel: ast.NewIdent(b.action),
 			},
 		},
