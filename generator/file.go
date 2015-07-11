@@ -10,7 +10,7 @@ func NewFileModel() *FileModel {
 	return &FileModel{
 		importToAlias:        make(map[string]string),
 		aliasToImport:        make(map[string]string),
-		structs:              make([]*StructModel, 0),
+		generalDeclarations:  make([]*ast.GenDecl, 0),
 		functionDeclarations: make([]*ast.FuncDecl, 0),
 	}
 }
@@ -20,7 +20,7 @@ type FileModel struct {
 	importToAlias        map[string]string
 	aliasToImport        map[string]string
 	aliasCounter         int
-	structs              []*StructModel
+	generalDeclarations  []*ast.GenDecl
 	functionDeclarations []*ast.FuncDecl
 }
 
@@ -56,8 +56,8 @@ func (m *FileModel) allocateUniqueAlias() string {
 	return fmt.Sprintf("alias%d", m.aliasCounter)
 }
 
-func (m *FileModel) AddStructure(declaration *StructModel) {
-	m.structs = append(m.structs, declaration)
+func (m *FileModel) AddGeneralDeclaration(declaration *ast.GenDecl) {
+	m.generalDeclarations = append(m.generalDeclarations, declaration)
 }
 
 func (m *FileModel) AddFunctionDeclaration(declaration *ast.FuncDecl) {
@@ -87,8 +87,8 @@ func (m *FileModel) BuildASTFile() *ast.File {
 		file.Decls = append(file.Decls, importDeclaration)
 	}
 
-	for _, structDeclaration := range m.structs {
-		file.Decls = append(file.Decls, structDeclaration.BuildASTStructDeclaration())
+	for _, generalDeclaration := range m.generalDeclarations {
+		file.Decls = append(file.Decls, generalDeclaration)
 	}
 
 	for _, functionDeclaration := range m.functionDeclarations {

@@ -11,21 +11,20 @@ func newTarget(pkgName, stubName string) *genTarget {
 	fileModel := NewFileModel()
 	fileModel.SetPackage(pkgName)
 
-	structModel := NewStructModel()
-	structModel.SetName(stubName)
-	fileModel.AddStructure(structModel)
+	structBuilder := NewStructBuilder()
+	structBuilder.SetName(stubName)
 
 	return &genTarget{
-		fileModel:   fileModel,
-		structModel: structModel,
-		structName:  stubName,
+		fileModel:     fileModel,
+		structBuilder: structBuilder,
+		structName:    stubName,
 	}
 }
 
 type genTarget struct {
-	fileModel   *FileModel
-	structModel *StructModel
-	structName  string
+	fileModel     *FileModel
+	structBuilder *StructBuilder
+	structName    string
 }
 
 func (t *genTarget) GenerateMethod(source *genSource) error {
@@ -51,28 +50,28 @@ func (t *genTarget) createMethodStubField(source *genSource) {
 	builder.SetFieldName(source.StubMethodName())
 	builder.SetParams(source.MethodParams)
 	builder.SetResults(source.MethodResults)
-	t.structModel.AddField(builder.Build())
+	t.structBuilder.AddField(builder.Build())
 }
 
 func (t *genTarget) createMutexField(source *genSource) {
 	builder := NewMethodMutexFieldBuilder()
 	builder.SetFieldName(source.MutexName())
 	builder.SetMutexType(t.resolveMutexType())
-	t.structModel.AddField(builder.Build())
+	t.structBuilder.AddField(builder.Build())
 }
 
 func (t *genTarget) createArgsForCallField(source *genSource) {
 	builder := NewMethodArgsFieldBuilder()
 	builder.SetFieldName(source.ArgsForCallName())
 	builder.SetParams(source.MethodParams)
-	t.structModel.AddField(builder.Build())
+	t.structBuilder.AddField(builder.Build())
 }
 
 func (t *genTarget) createReturnsField(source *genSource) {
 	builder := NewReturnsFieldBuilder()
 	builder.SetFieldName(source.ReturnsName())
 	builder.SetResults(source.MethodResults)
-	t.structModel.AddField(builder.Build())
+	t.structBuilder.AddField(builder.Build())
 }
 
 func (t *genTarget) createStubMethod(source *genSource) {
@@ -135,6 +134,7 @@ func (t *genTarget) Save(filePath string) error {
 	}
 	defer osFile.Close()
 
+	t.fileModel.AddGeneralDeclaration(t.structBuilder.Build())
 	astFile := t.fileModel.BuildASTFile()
 	err = format.Node(osFile, token.NewFileSet(), astFile)
 	if err != nil {
