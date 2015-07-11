@@ -8,21 +8,21 @@ import (
 )
 
 func newTarget(pkgName, stubName string) *genTarget {
-	fileModel := NewFileModel()
-	fileModel.SetPackage(pkgName)
+	fileBuilder := NewFileBuilder()
+	fileBuilder.SetPackage(pkgName)
 
 	structBuilder := NewStructBuilder()
 	structBuilder.SetName(stubName)
 
 	return &genTarget{
-		fileModel:     fileModel,
+		fileBuilder:   fileBuilder,
 		structBuilder: structBuilder,
 		structName:    stubName,
 	}
 }
 
 type genTarget struct {
-	fileModel     *FileModel
+	fileBuilder   *FileBuilder
 	structBuilder *StructBuilder
 	structName    string
 }
@@ -83,7 +83,7 @@ func (t *genTarget) createStubMethod(source *genSource) {
 	builder.SetStubFieldSelector(source.StubFieldSelector())
 	builder.SetParams(source.MethodParams)
 	builder.SetResults(source.MethodResults)
-	t.fileModel.AddFunctionDeclaration(builder.Build())
+	t.fileBuilder.AddFunctionDeclaration(builder.Build())
 }
 
 func (t *genTarget) createCallCountMethod(source *genSource) {
@@ -91,7 +91,7 @@ func (t *genTarget) createCallCountMethod(source *genSource) {
 	builder := NewCountMethodBuilder(methodBuilder)
 	builder.SetMutexFieldSelector(source.MutexFieldSelector())
 	builder.SetArgsFieldSelector(source.ArgsFieldSelector())
-	t.fileModel.AddFunctionDeclaration(builder.Build())
+	t.fileBuilder.AddFunctionDeclaration(builder.Build())
 }
 
 func (t *genTarget) createArgsForCallMethod(source *genSource) {
@@ -100,7 +100,7 @@ func (t *genTarget) createArgsForCallMethod(source *genSource) {
 	builder.SetMutexFieldSelector(source.MutexFieldSelector())
 	builder.SetArgsFieldSelector(source.ArgsFieldSelector())
 	builder.SetParams(source.MethodParams)
-	t.fileModel.AddFunctionDeclaration(builder.Build())
+	t.fileBuilder.AddFunctionDeclaration(builder.Build())
 }
 
 func (t *genTarget) createReturnsMethod(source *genSource) {
@@ -109,7 +109,7 @@ func (t *genTarget) createReturnsMethod(source *genSource) {
 	builder.SetMutexFieldSelector(source.MutexFieldSelector())
 	builder.SetReturnsFieldSelector(source.ReturnsFieldSelector())
 	builder.SetResults(source.MethodResults)
-	t.fileModel.AddFunctionDeclaration(builder.Build())
+	t.fileBuilder.AddFunctionDeclaration(builder.Build())
 }
 
 func (t *genTarget) createMethodBuilder(source *genSource, name string) *MethodBuilder {
@@ -120,7 +120,7 @@ func (t *genTarget) createMethodBuilder(source *genSource, name string) *MethodB
 }
 
 func (t *genTarget) resolveMutexType() ast.Expr {
-	alias := t.fileModel.AddImport("sync", "sync")
+	alias := t.fileBuilder.AddImport("sync", "sync")
 	return &ast.SelectorExpr{
 		X:   ast.NewIdent(alias),
 		Sel: ast.NewIdent("RWMutex"),
@@ -134,8 +134,8 @@ func (t *genTarget) Save(filePath string) error {
 	}
 	defer osFile.Close()
 
-	t.fileModel.AddGeneralDeclaration(t.structBuilder.Build())
-	astFile := t.fileModel.BuildASTFile()
+	t.fileBuilder.AddGeneralDeclaration(t.structBuilder.Build())
+	astFile := t.fileBuilder.Build()
 	err = format.Node(osFile, token.NewFileSet(), astFile)
 	if err != nil {
 		return err

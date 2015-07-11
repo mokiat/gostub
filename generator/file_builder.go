@@ -6,8 +6,8 @@ import (
 	"go/token"
 )
 
-func NewFileModel() *FileModel {
-	return &FileModel{
+func NewFileBuilder() *FileBuilder {
+	return &FileBuilder{
 		importToAlias:        make(map[string]string),
 		aliasToImport:        make(map[string]string),
 		generalDeclarations:  make([]*ast.GenDecl, 0),
@@ -15,7 +15,7 @@ func NewFileModel() *FileModel {
 	}
 }
 
-type FileModel struct {
+type FileBuilder struct {
 	filePackageName      string
 	importToAlias        map[string]string
 	aliasToImport        map[string]string
@@ -24,7 +24,7 @@ type FileModel struct {
 	functionDeclarations []*ast.FuncDecl
 }
 
-func (m *FileModel) SetPackage(name string) {
+func (m *FileBuilder) SetPackage(name string) {
 	m.filePackageName = name
 }
 
@@ -33,7 +33,7 @@ func (m *FileModel) SetPackage(name string) {
 // This function returns the alias to be used in selector expressions.
 // If the specified location is already added, then just the alias for
 // that package is returned.
-func (m *FileModel) AddImport(pkgName, location string) string {
+func (m *FileBuilder) AddImport(pkgName, location string) string {
 	alias, locationAlreadyRegistered := m.importToAlias[location]
 	if locationAlreadyRegistered {
 		return alias
@@ -51,20 +51,20 @@ func (m *FileModel) AddImport(pkgName, location string) string {
 	return alias
 }
 
-func (m *FileModel) allocateUniqueAlias() string {
+func (m *FileBuilder) allocateUniqueAlias() string {
 	m.aliasCounter++
 	return fmt.Sprintf("alias%d", m.aliasCounter)
 }
 
-func (m *FileModel) AddGeneralDeclaration(declaration *ast.GenDecl) {
+func (m *FileBuilder) AddGeneralDeclaration(declaration *ast.GenDecl) {
 	m.generalDeclarations = append(m.generalDeclarations, declaration)
 }
 
-func (m *FileModel) AddFunctionDeclaration(declaration *ast.FuncDecl) {
+func (m *FileBuilder) AddFunctionDeclaration(declaration *ast.FuncDecl) {
 	m.functionDeclarations = append(m.functionDeclarations, declaration)
 }
 
-func (m *FileModel) BuildASTFile() *ast.File {
+func (m *FileBuilder) Build() *ast.File {
 	file := &ast.File{
 		Name: ast.NewIdent(m.filePackageName),
 	}
