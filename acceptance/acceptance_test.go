@@ -1,8 +1,8 @@
-package main_test
+package acceptance_test
 
 import (
-	"github.com/momchil-atanasov/gostub/testables"
-	"github.com/momchil-atanasov/gostub/testables/testables_stubs"
+	"github.com/momchil-atanasov/gostub/acceptance"
+	"github.com/momchil-atanasov/gostub/acceptance/acceptance_stubs"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -15,29 +15,29 @@ var _ = Describe("Main", func() {
 	const threshold = 0.0001
 
 	Describe("Empty interface", func() {
-		var stub *testables_stubs.EmptyInterfaceStub
+		var stub *acceptance_stubs.EmptyInterfaceStub
 
 		BeforeEach(func() {
-			stub = new(testables_stubs.EmptyInterfaceStub)
+			stub = new(acceptance_stubs.EmptyInterfaceStub)
 		})
 
 		It("stub is assignable to interface", func() {
-			_, assignable := interface{}(stub).(testables.EmptyInterface)
+			_, assignable := interface{}(stub).(acceptance.EmptyInterface)
 			Ω(assignable).Should(BeTrue())
 		})
 	})
 
 	Describe("NoParamsNoResults", func() {
-		var stub *testables_stubs.NoParamsNoResultsStub
+		var stub *acceptance_stubs.NoParamsNoResultsStub
 		var runWasCalled bool
 
 		BeforeEach(func() {
-			stub = new(testables_stubs.NoParamsNoResultsStub)
+			stub = new(acceptance_stubs.NoParamsNoResultsStub)
 			runWasCalled = false
 		})
 
 		It("stub is assignable to interface", func() {
-			_, assignable := interface{}(stub).(testables.NoParamsNoResults)
+			_, assignable := interface{}(stub).(acceptance.NoParamsNoResults)
 			Ω(assignable).Should(BeTrue())
 		})
 
@@ -57,14 +57,14 @@ var _ = Describe("Main", func() {
 	})
 
 	Describe("PrimitiveParams", func() {
-		var stub *testables_stubs.PrimitiveParamsStub
+		var stub *acceptance_stubs.PrimitiveParamsStub
 		var runWasCalled bool
 		var runCountArg int
 		var runLocationArg string
 		var runTimeoutArg float32
 
 		BeforeEach(func() {
-			stub = new(testables_stubs.PrimitiveParamsStub)
+			stub = new(acceptance_stubs.PrimitiveParamsStub)
 			runWasCalled = false
 			runCountArg = 0
 			runLocationArg = ""
@@ -72,7 +72,7 @@ var _ = Describe("Main", func() {
 		})
 
 		It("stub is assignable to interface", func() {
-			_, assignable := interface{}(stub).(testables.PrimitiveParams)
+			_, assignable := interface{}(stub).(acceptance.PrimitiveParams)
 			Ω(assignable).Should(BeTrue())
 		})
 
@@ -112,14 +112,14 @@ var _ = Describe("Main", func() {
 	})
 
 	Describe("PrimitiveResults", func() {
-		var stub *testables_stubs.PrimitiveResultsStub
+		var stub *acceptance_stubs.PrimitiveResultsStub
 
 		BeforeEach(func() {
-			stub = new(testables_stubs.PrimitiveResultsStub)
+			stub = new(acceptance_stubs.PrimitiveResultsStub)
 		})
 
 		It("stub is assignable to interface", func() {
-			_, assignable := interface{}(stub).(testables.PrimitiveResults)
+			_, assignable := interface{}(stub).(acceptance.PrimitiveResults)
 			Ω(assignable).Should(BeTrue())
 		})
 

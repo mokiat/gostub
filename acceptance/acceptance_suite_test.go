@@ -1,4 +1,4 @@
-package main_test
+package acceptance_test
 
 import (
 	. "github.com/onsi/ginkgo"
@@ -9,5 +9,5 @@ import (
 
 func TestGostub(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Gostub Suite")
+	RunSpecs(t, "Acceptance Test Suite")
 }

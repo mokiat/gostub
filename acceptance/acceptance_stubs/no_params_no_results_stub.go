@@ -1,4 +1,4 @@
-package testables_stubs
+package acceptance_stubs
 
 import (
 	sync "sync"

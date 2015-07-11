@@ -1,4 +1,4 @@
-package testables
+package acceptance
 
 //go:generate gostub EmptyInterface
 
