@@ -93,8 +93,13 @@ func getParams(funcType *ast.FuncType) []*ast.Field {
 
 func getResults(funcType *ast.FuncType) []*ast.Field {
 	results := []*ast.Field{}
+	resultIndex := 1
 	for result := range util.EachResultInFunc(funcType) {
+		result.Names = []*ast.Ident{
+			ast.NewIdent(fmt.Sprintf("result%d", resultIndex)),
+		}
 		results = append(results, result)
+		resultIndex++
 	}
 	return results
 }

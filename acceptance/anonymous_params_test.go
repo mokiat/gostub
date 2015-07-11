@@ -9,8 +9,6 @@ import (
 )
 
 var _ = Describe("AnonymousParams", func() {
-	const threshold = 0.0001
-
 	var stub *acceptance_stubs.AnonymousParamsStub
 	var methodWasCalled bool
 	var methodFirstArg string
