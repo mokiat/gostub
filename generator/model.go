@@ -7,27 +7,27 @@ import (
 	"os"
 )
 
-func newTarget(pkgName, stubName string) *genTarget {
+func NewGeneratorModel(pkgName, stubName string) *GeneratorModel {
 	fileBuilder := NewFileBuilder()
 	fileBuilder.SetPackage(pkgName)
 
 	structBuilder := NewStructBuilder()
 	structBuilder.SetName(stubName)
 
-	return &genTarget{
+	return &GeneratorModel{
 		fileBuilder:   fileBuilder,
 		structBuilder: structBuilder,
 		structName:    stubName,
 	}
 }
 
-type genTarget struct {
+type GeneratorModel struct {
 	fileBuilder   *FileBuilder
 	structBuilder *StructBuilder
 	structName    string
 }
 
-func (t *genTarget) GenerateMethod(source *genSource) error {
+func (t *GeneratorModel) AddMethod(source *genSource) error {
 	t.createMethodStubField(source)
 	t.createMutexField(source)
 	t.createArgsForCallField(source)
@@ -45,7 +45,7 @@ func (t *genTarget) GenerateMethod(source *genSource) error {
 	return nil
 }
 
-func (t *genTarget) createMethodStubField(source *genSource) {
+func (t *GeneratorModel) createMethodStubField(source *genSource) {
 	builder := NewMethodStubFieldBuilder()
 	builder.SetFieldName(source.StubMethodName())
 	builder.SetParams(source.MethodParams)
@@ -53,28 +53,28 @@ func (t *genTarget) createMethodStubField(source *genSource) {
 	t.structBuilder.AddField(builder.Build())
 }
 
-func (t *genTarget) createMutexField(source *genSource) {
+func (t *GeneratorModel) createMutexField(source *genSource) {
 	builder := NewMethodMutexFieldBuilder()
 	builder.SetFieldName(source.MutexName())
 	builder.SetMutexType(t.resolveMutexType())
 	t.structBuilder.AddField(builder.Build())
 }
 
-func (t *genTarget) createArgsForCallField(source *genSource) {
+func (t *GeneratorModel) createArgsForCallField(source *genSource) {
 	builder := NewMethodArgsFieldBuilder()
 	builder.SetFieldName(source.ArgsForCallName())
 	builder.SetParams(source.MethodParams)
 	t.structBuilder.AddField(builder.Build())
 }
 
-func (t *genTarget) createReturnsField(source *genSource) {
+func (t *GeneratorModel) createReturnsField(source *genSource) {
 	builder := NewReturnsFieldBuilder()
 	builder.SetFieldName(source.ReturnsName())
 	builder.SetResults(source.MethodResults)
 	t.structBuilder.AddField(builder.Build())
 }
 
-func (t *genTarget) createStubMethod(source *genSource) {
+func (t *GeneratorModel) createStubMethod(source *genSource) {
 	methodBuilder := t.createMethodBuilder(source, source.MethodName)
 	builder := NewStubMethodBuilder(methodBuilder)
 	builder.SetMutexFieldSelector(source.MutexFieldSelector())
@@ -86,7 +86,7 @@ func (t *genTarget) createStubMethod(source *genSource) {
 	t.fileBuilder.AddFunctionDeclaration(builder.Build())
 }
 
-func (t *genTarget) createCallCountMethod(source *genSource) {
+func (t *GeneratorModel) createCallCountMethod(source *genSource) {
 	methodBuilder := t.createMethodBuilder(source, source.CallCountMethodName())
 	builder := NewCountMethodBuilder(methodBuilder)
 	builder.SetMutexFieldSelector(source.MutexFieldSelector())
@@ -94,7 +94,7 @@ func (t *genTarget) createCallCountMethod(source *genSource) {
 	t.fileBuilder.AddFunctionDeclaration(builder.Build())
 }
 
-func (t *genTarget) createArgsForCallMethod(source *genSource) {
+func (t *GeneratorModel) createArgsForCallMethod(source *genSource) {
 	methodBuilder := t.createMethodBuilder(source, source.ArgsForCallMethodName())
 	builder := NewArgsMethodBuilder(methodBuilder)
 	builder.SetMutexFieldSelector(source.MutexFieldSelector())
@@ -103,7 +103,7 @@ func (t *genTarget) createArgsForCallMethod(source *genSource) {
 	t.fileBuilder.AddFunctionDeclaration(builder.Build())
 }
 
-func (t *genTarget) createReturnsMethod(source *genSource) {
+func (t *GeneratorModel) createReturnsMethod(source *genSource) {
 	methodBuilder := t.createMethodBuilder(source, source.ReturnsMethodName())
 	builder := NewReturnsMethodBuilder(methodBuilder)
 	builder.SetMutexFieldSelector(source.MutexFieldSelector())
@@ -112,14 +112,14 @@ func (t *genTarget) createReturnsMethod(source *genSource) {
 	t.fileBuilder.AddFunctionDeclaration(builder.Build())
 }
 
-func (t *genTarget) createMethodBuilder(source *genSource, name string) *MethodBuilder {
+func (t *GeneratorModel) createMethodBuilder(source *genSource, name string) *MethodBuilder {
 	builder := NewMethodBuilder()
 	builder.SetName(name)
 	builder.SetReceiver(source.StructSelfName(), t.structName)
 	return builder
 }
 
-func (t *genTarget) resolveMutexType() ast.Expr {
+func (t *GeneratorModel) resolveMutexType() ast.Expr {
 	alias := t.fileBuilder.AddImport("sync", "sync")
 	return &ast.SelectorExpr{
 		X:   ast.NewIdent(alias),
@@ -127,7 +127,7 @@ func (t *genTarget) resolveMutexType() ast.Expr {
 	}
 }
 
-func (t *genTarget) Save(filePath string) error {
+func (t *GeneratorModel) Save(filePath string) error {
 	osFile, err := os.Create(filePath)
 	if err != nil {
 		return err

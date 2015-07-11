@@ -36,7 +36,7 @@ type Config struct {
 }
 
 func Generate(config Config) error {
-	target := newTarget(config.TargetPackageName, config.TargetStructName)
+	model := NewGeneratorModel(config.TargetPackageName, config.TargetStructName)
 
 	iface, err := findTypeDeclaration(config.SourceInterfaceName, config.SourcePackageLocation)
 	if err != nil {
@@ -48,12 +48,12 @@ func Generate(config Config) error {
 		return errors.New(fmt.Sprintf("Type '%s' in '%s' is not interface!", config.SourceInterfaceName, config.SourcePackageLocation))
 	}
 
-	err = generateIFace(iFaceType, target)
+	err = generateIFace(iFaceType, model)
 	if err != nil {
 		return err
 	}
 
-	err = target.Save(config.TargetFilePath)
+	err = model.Save(config.TargetFilePath)
 	if err != nil {
 		return err
 	}
@@ -62,7 +62,7 @@ func Generate(config Config) error {
 	return nil
 }
 
-func generateIFace(iFaceType *ast.InterfaceType, target *genTarget) error {
+func generateIFace(iFaceType *ast.InterfaceType, model *GeneratorModel) error {
 	for method := range util.EachMethodInInterfaceType(iFaceType) {
 		funcType := method.Type.(*ast.FuncType)
 		source := &genSource{
@@ -70,7 +70,7 @@ func generateIFace(iFaceType *ast.InterfaceType, target *genTarget) error {
 			MethodParams:  getParams(funcType),
 			MethodResults: getResults(funcType),
 		}
-		err := target.GenerateMethod(source)
+		err := model.AddMethod(source)
 		if err != nil {
 			return err
 		}
