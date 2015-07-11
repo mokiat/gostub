@@ -79,19 +79,24 @@ func generateIFace(iFaceType *ast.InterfaceType, target *genTarget) error {
 }
 
 func getParams(funcType *ast.FuncType) []*ast.Field {
-	result := []*ast.Field{}
+	params := []*ast.Field{}
+	paramIndex := 1
 	for param := range util.EachParamInFunc(funcType) {
-		result = append(result, param)
+		param.Names = []*ast.Ident{
+			ast.NewIdent(fmt.Sprintf("arg%d", paramIndex)),
+		}
+		params = append(params, param)
+		paramIndex++
 	}
-	return result
+	return params
 }
 
 func getResults(funcType *ast.FuncType) []*ast.Field {
-	result := []*ast.Field{}
-	for param := range util.EachResultInFunc(funcType) {
-		result = append(result, param)
+	results := []*ast.Field{}
+	for result := range util.EachResultInFunc(funcType) {
+		results = append(results, result)
 	}
-	return result
+	return results
 }
 
 func findTypeDeclaration(name, location string) (*ast.TypeSpec, error) {
