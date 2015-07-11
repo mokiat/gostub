@@ -18,3 +18,10 @@ func runRegExp(expr string, text string, format string) string {
 	model := regexp.MustCompile(expr)
 	return model.ReplaceAllString(text, format)
 }
+
+func ToPrivate(name string) string {
+	if name == "" {
+		return ""
+	}
+	return strings.ToLower(name[0:1]) + name[1:]
+}

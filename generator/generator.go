@@ -65,7 +65,7 @@ func Generate(config Config) error {
 func generateIFace(iFaceType *ast.InterfaceType, model *GeneratorModel) error {
 	for method := range util.EachMethodInInterfaceType(iFaceType) {
 		funcType := method.Type.(*ast.FuncType)
-		source := &genSource{
+		source := &MethodConfig{
 			MethodName:    method.Names[0].String(),
 			MethodParams:  getParams(funcType),
 			MethodResults: getResults(funcType),

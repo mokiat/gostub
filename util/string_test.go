@@ -41,4 +41,19 @@ var _ = Describe("String", func() {
 			Ω(SnakeCase("1234hello")).Should(Equal("1234_hello"))
 		})
 	})
+
+	Describe("ToPrivate", func() {
+		It("has no effect on empty strings", func() {
+			Ω(ToPrivate("")).Should(Equal(""))
+		})
+		It("has no effect on private names", func() {
+			Ω(ToPrivate("privateName")).Should(Equal("privateName"))
+		})
+		It("converts upper camel case to lower camel case", func() {
+			Ω(ToPrivate("DoSomething")).Should(Equal("doSomething"))
+		})
+		It("works on single letters", func() {
+			Ω(ToPrivate("U")).Should(Equal("u"))
+		})
+	})
 })
