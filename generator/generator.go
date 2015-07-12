@@ -68,7 +68,7 @@ func generateIFace(iFaceType *ast.InterfaceType, model *GeneratorModel) error {
 		source := &MethodConfig{
 			MethodName:    method.Names[0].String(),
 			MethodParams:  getNormalizedParams(funcType),
-			MethodResults: getResults(funcType),
+			MethodResults: getNormalizedResults(funcType),
 		}
 		err := model.AddMethod(source)
 		if err != nil {
@@ -92,17 +92,18 @@ func getNormalizedParams(funcType *ast.FuncType) []*ast.Field {
 	return normalizedParams
 }
 
-func getResults(funcType *ast.FuncType) []*ast.Field {
-	results := []*ast.Field{}
+func getNormalizedResults(funcType *ast.FuncType) []*ast.Field {
+	normalizedResults := []*ast.Field{}
 	resultIndex := 1
 	for result := range util.EachResultInFunc(funcType) {
-		result.Names = []*ast.Ident{
-			ast.NewIdent(fmt.Sprintf("result%d", resultIndex)),
+		count := util.FieldReuseCount(result)
+		for i := 0; i < count; i++ {
+			normalizedResult := util.CreateField(fmt.Sprintf("result%d", resultIndex), result.Type)
+			normalizedResults = append(normalizedResults, normalizedResult)
+			resultIndex++
 		}
-		results = append(results, result)
-		resultIndex++
 	}
-	return results
+	return normalizedResults
 }
 
 func findTypeDeclaration(name, location string) (*ast.TypeSpec, error) {
