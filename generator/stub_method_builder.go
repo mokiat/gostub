@@ -64,13 +64,14 @@ func (b *StubMethodBuilder) SetResults(results []*ast.Field) {
 }
 
 func (b *StubMethodBuilder) Build() *ast.FuncDecl {
-	mutexLockBuilder := NewMutexLockBuilder()
+	mutexLockBuilder := NewMutexActionBuilder()
 	mutexLockBuilder.SetMutexFieldSelector(b.mutexFieldSelector)
 	mutexLockBuilder.SetAction("Lock")
 
-	mutexUnlockBuilder := NewMutexUnlockBuilder()
+	mutexUnlockBuilder := NewMutexActionBuilder()
 	mutexUnlockBuilder.SetMutexFieldSelector(b.mutexFieldSelector)
 	mutexUnlockBuilder.SetAction("Unlock")
+	mutexUnlockBuilder.SetDeferred(true)
 
 	b.methodBuilder.SetType(&ast.FuncType{
 		Params: &ast.FieldList{

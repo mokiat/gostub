@@ -31,13 +31,14 @@ func (b *CountMethodBuilder) SetArgsFieldSelector(selector *ast.SelectorExpr) {
 }
 
 func (b *CountMethodBuilder) Build() *ast.FuncDecl {
-	mutexLockBuilder := NewMutexLockBuilder()
+	mutexLockBuilder := NewMutexActionBuilder()
 	mutexLockBuilder.SetMutexFieldSelector(b.mutexFieldSelector)
 	mutexLockBuilder.SetAction("RLock")
 
-	mutexUnlockBuilder := NewMutexUnlockBuilder()
+	mutexUnlockBuilder := NewMutexActionBuilder()
 	mutexUnlockBuilder.SetMutexFieldSelector(b.mutexFieldSelector)
 	mutexUnlockBuilder.SetAction("RUnlock")
+	mutexUnlockBuilder.SetDeferred(true)
 
 	b.methodBuilder.SetType(&ast.FuncType{
 		Params: &ast.FieldList{},
