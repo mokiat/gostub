@@ -67,7 +67,7 @@ func generateIFace(iFaceType *ast.InterfaceType, model *GeneratorModel) error {
 		funcType := method.Type.(*ast.FuncType)
 		source := &MethodConfig{
 			MethodName:    method.Names[0].String(),
-			MethodParams:  getParams(funcType),
+			MethodParams:  getNormalizedParams(funcType),
 			MethodResults: getResults(funcType),
 		}
 		err := model.AddMethod(source)
@@ -78,17 +78,18 @@ func generateIFace(iFaceType *ast.InterfaceType, model *GeneratorModel) error {
 	return nil
 }
 
-func getParams(funcType *ast.FuncType) []*ast.Field {
-	params := []*ast.Field{}
+func getNormalizedParams(funcType *ast.FuncType) []*ast.Field {
+	normalizedParams := []*ast.Field{}
 	paramIndex := 1
 	for param := range util.EachParamInFunc(funcType) {
-		param.Names = []*ast.Ident{
-			ast.NewIdent(fmt.Sprintf("arg%d", paramIndex)),
+		count := util.FieldReuseCount(param)
+		for i := 0; i < count; i++ {
+			normalizedParam := util.CreateField(fmt.Sprintf("arg%d", paramIndex), param.Type)
+			normalizedParams = append(normalizedParams, normalizedParam)
+			paramIndex++
 		}
-		params = append(params, param)
-		paramIndex++
 	}
-	return params
+	return normalizedParams
 }
 
 func getResults(funcType *ast.FuncType) []*ast.Field {
