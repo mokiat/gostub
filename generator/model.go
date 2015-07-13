@@ -2,9 +2,6 @@ package generator
 
 import (
 	"go/ast"
-	"go/format"
-	"go/token"
-	"os"
 
 	"github.com/momchil-atanasov/gostub/util"
 )
@@ -141,15 +138,25 @@ func (t *GeneratorModel) resolveMutexType() ast.Expr {
 }
 
 func (t *GeneratorModel) Save(filePath string) error {
-	osFile, err := os.Create(filePath)
+	t.fileBuilder.AddGeneralDeclaration(t.structBuilder.Build())
+	astFile := t.fileBuilder.Build()
+
+	sourceCode, err := util.CreateSourceCode(astFile)
 	if err != nil {
 		return err
 	}
-	defer osFile.Close()
 
-	t.fileBuilder.AddGeneralDeclaration(t.structBuilder.Build())
-	astFile := t.fileBuilder.Build()
-	err = format.Node(osFile, token.NewFileSet(), astFile)
+	sourceCode, err = util.FixSourceCodeImports(sourceCode)
+	if err != nil {
+		return err
+	}
+
+	sourceCode, err = util.FormatSourceCode(sourceCode)
+	if err != nil {
+		return err
+	}
+
+	err = util.SaveSourceCode(filePath, sourceCode)
 	if err != nil {
 		return err
 	}
