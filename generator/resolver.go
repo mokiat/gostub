@@ -9,26 +9,11 @@ import (
 	"github.com/momchil-atanasov/gostub/util"
 )
 
-func NewResolver(model *GeneratorModel, locator *Locator, astFile *ast.File, fileLocation string) *Resolver {
-	imports := []importEntry{}
-	for decl := range util.EachGenericDeclarationInFile(astFile) {
-		for spec := range util.EachSpecificationInGenericDeclaration(decl) {
-			if importSpec, ok := spec.(*ast.ImportSpec); ok {
-				imp := importEntry{}
-				if importSpec.Name != nil {
-					imp.Alias = importSpec.Name.String()
-				}
-				imp.Location = strings.Trim(importSpec.Path.Value, "\"")
-				imports = append(imports, imp)
-			}
-		}
-	}
+func NewResolver(model *GeneratorModel, locator *Locator) *Resolver {
 	return &Resolver{
-		model:        model,
-		locator:      locator,
-		astFile:      astFile,
-		fileLocation: fileLocation,
-		imports:      imports,
+		model:   model,
+		locator: locator,
+		imports: make([]importEntry, 0),
 	}
 }
 
@@ -38,11 +23,26 @@ type importEntry struct {
 }
 
 type Resolver struct {
-	model        *GeneratorModel
-	locator      *Locator
-	astFile      *ast.File
-	fileLocation string
-	imports      []importEntry
+	model   *GeneratorModel
+	locator *Locator
+	astFile *ast.File
+	imports []importEntry
+}
+
+func (r *Resolver) SetContext(astFile *ast.File, fileLocation string) {
+	r.imports = []importEntry{}
+	for decl := range util.EachGenericDeclarationInFile(astFile) {
+		for spec := range util.EachSpecificationInGenericDeclaration(decl) {
+			if importSpec, ok := spec.(*ast.ImportSpec); ok {
+				imp := importEntry{}
+				if importSpec.Name != nil {
+					imp.Alias = importSpec.Name.String()
+				}
+				imp.Location = strings.Trim(importSpec.Path.Value, "\"")
+				r.imports = append(r.imports, imp)
+			}
+		}
+	}
 }
 
 func (r *Resolver) ResolveType(astType ast.Expr) (ast.Expr, error) {

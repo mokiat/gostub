@@ -36,6 +36,7 @@ type Config struct {
 func Generate(config Config) error {
 	model := NewGeneratorModel(config.TargetPackageName, config.TargetStructName)
 	locator := NewLocator()
+	resolver := NewResolver(model, locator)
 
 	discovery, found, err := locator.FindTypeDeclarationInLocation(config.SourceInterfaceName, config.SourcePackageLocation)
 	if err != nil {
@@ -49,7 +50,7 @@ func Generate(config Config) error {
 		return errors.New(fmt.Sprintf("Type '%s' in '%s' is not interface!", config.SourceInterfaceName, config.SourcePackageLocation))
 	}
 
-	resolver := NewResolver(model, locator, discovery.File, config.SourcePackageLocation)
+	resolver.SetContext(discovery.File, config.SourcePackageLocation)
 	stubGen := newGenerator(model, resolver)
 
 	err = stubGen.generateIFace(iFaceType)
