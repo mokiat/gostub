@@ -127,14 +127,25 @@ func EachTypeSpecificationInGenericDeclaration(decl *ast.GenDecl) <-chan *ast.Ty
 	return result
 }
 
-func EachInterfaceDeclarationInFile(file *ast.File) <-chan *ast.TypeSpec {
+func EachTypeSpecificationInFile(file *ast.File) <-chan *ast.TypeSpec {
 	result := make(chan *ast.TypeSpec)
 	go func() {
 		for decl := range EachGenericDeclarationInFile(file) {
 			for spec := range EachTypeSpecificationInGenericDeclaration(decl) {
-				if _, ok := spec.Type.(*ast.InterfaceType); ok {
-					result <- spec
-				}
+				result <- spec
+			}
+		}
+		close(result)
+	}()
+	return result
+}
+
+func EachInterfaceDeclarationInFile(file *ast.File) <-chan *ast.TypeSpec {
+	result := make(chan *ast.TypeSpec)
+	go func() {
+		for spec := range EachTypeSpecificationInFile(file) {
+			if _, ok := spec.Type.(*ast.InterfaceType); ok {
+				result <- spec
 			}
 		}
 		close(result)

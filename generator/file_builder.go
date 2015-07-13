@@ -40,7 +40,7 @@ func (m *FileBuilder) AddImport(pkgName, location string) string {
 	}
 
 	_, aliasAlreadyRegistered := m.aliasToImport[pkgName]
-	if aliasAlreadyRegistered {
+	if aliasAlreadyRegistered || pkgName == "" {
 		alias = m.allocateUniqueAlias()
 	} else {
 		alias = pkgName

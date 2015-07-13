@@ -4,8 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"go/ast"
-	"go/parser"
-	"go/token"
 
 	"github.com/momchil-atanasov/gostub/util"
 )
@@ -37,18 +35,24 @@ type Config struct {
 
 func Generate(config Config) error {
 	model := NewGeneratorModel(config.TargetPackageName, config.TargetStructName)
+	locator := NewLocator()
 
-	iface, err := findTypeDeclaration(config.SourceInterfaceName, config.SourcePackageLocation)
+	discovery, found, err := locator.FindTypeDeclarationInLocation(config.SourceInterfaceName, config.SourcePackageLocation)
 	if err != nil {
 		return err
 	}
-
-	iFaceType, isIFace := iface.Type.(*ast.InterfaceType)
+	if !found {
+		return errors.New(fmt.Sprintf("Could not find interface '%s'.", config.SourceInterfaceName))
+	}
+	iFaceType, isIFace := discovery.Spec.Type.(*ast.InterfaceType)
 	if !isIFace {
 		return errors.New(fmt.Sprintf("Type '%s' in '%s' is not interface!", config.SourceInterfaceName, config.SourcePackageLocation))
 	}
 
-	err = generateIFace(iFaceType, model)
+	resolver := NewResolver(model, locator, discovery.File, config.SourcePackageLocation)
+	stubGen := newGenerator(model, resolver)
+
+	err = stubGen.generateIFace(iFaceType)
 	if err != nil {
 		return err
 	}
@@ -62,15 +66,27 @@ func Generate(config Config) error {
 	return nil
 }
 
-func generateIFace(iFaceType *ast.InterfaceType, model *GeneratorModel) error {
+func newGenerator(model *GeneratorModel, resolver *Resolver) *stubGenerator {
+	return &stubGenerator{
+		model:    model,
+		resolver: resolver,
+	}
+}
+
+type stubGenerator struct {
+	model    *GeneratorModel
+	resolver *Resolver
+}
+
+func (g *stubGenerator) generateIFace(iFaceType *ast.InterfaceType) error {
 	for method := range util.EachMethodInInterfaceType(iFaceType) {
 		funcType := method.Type.(*ast.FuncType)
 		source := &MethodConfig{
 			MethodName:    method.Names[0].String(),
-			MethodParams:  getNormalizedParams(funcType),
-			MethodResults: getNormalizedResults(funcType),
+			MethodParams:  g.getNormalizedParams(funcType),
+			MethodResults: g.getNormalizedResults(funcType),
 		}
-		err := model.AddMethod(source)
+		err := g.model.AddMethod(source)
 		if err != nil {
 			return err
 		}
@@ -78,13 +94,15 @@ func generateIFace(iFaceType *ast.InterfaceType, model *GeneratorModel) error {
 	return nil
 }
 
-func getNormalizedParams(funcType *ast.FuncType) []*ast.Field {
+func (g *stubGenerator) getNormalizedParams(funcType *ast.FuncType) []*ast.Field {
 	normalizedParams := []*ast.Field{}
 	paramIndex := 1
 	for param := range util.EachParamInFunc(funcType) {
 		count := util.FieldReuseCount(param)
 		for i := 0; i < count; i++ {
-			normalizedParam := util.CreateField(fmt.Sprintf("arg%d", paramIndex), param.Type)
+			fieldName := fmt.Sprintf("arg%d", paramIndex)
+			fieldType, _ := g.resolver.ResolveType(param.Type)
+			normalizedParam := util.CreateField(fieldName, fieldType)
 			normalizedParams = append(normalizedParams, normalizedParam)
 			paramIndex++
 		}
@@ -92,40 +110,18 @@ func getNormalizedParams(funcType *ast.FuncType) []*ast.Field {
 	return normalizedParams
 }
 
-func getNormalizedResults(funcType *ast.FuncType) []*ast.Field {
+func (g *stubGenerator) getNormalizedResults(funcType *ast.FuncType) []*ast.Field {
 	normalizedResults := []*ast.Field{}
 	resultIndex := 1
 	for result := range util.EachResultInFunc(funcType) {
 		count := util.FieldReuseCount(result)
 		for i := 0; i < count; i++ {
-			normalizedResult := util.CreateField(fmt.Sprintf("result%d", resultIndex), result.Type)
+			fieldName := fmt.Sprintf("result%d", resultIndex)
+			fieldType, _ := g.resolver.ResolveType(result.Type)
+			normalizedResult := util.CreateField(fieldName, fieldType)
 			normalizedResults = append(normalizedResults, normalizedResult)
 			resultIndex++
 		}
 	}
 	return normalizedResults
-}
-
-func findTypeDeclaration(name, location string) (*ast.TypeSpec, error) {
-	sourcePath, err := util.ImportToDir(location)
-	if err != nil {
-		return nil, err
-	}
-
-	pkgs, err := parser.ParseDir(token.NewFileSet(), sourcePath, nil, parser.AllErrors)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, pkg := range pkgs {
-		for _, file := range pkg.Files {
-			for spec := range util.EachInterfaceDeclarationInFile(file) {
-				if spec.Name.String() == name {
-					return spec, nil
-				}
-			}
-		}
-	}
-
-	return nil, errors.New(fmt.Sprintf("Could not find interface '%s'.", name))
 }
