@@ -48,45 +48,53 @@ func (r *Resolver) SetContext(astFile *ast.File, fileLocation string) {
 func (r *Resolver) ResolveType(astType ast.Expr) (ast.Expr, error) {
 	switch t := astType.(type) {
 	case *ast.Ident:
-		if r.isBuiltIn(t.String()) {
-			return t, nil
-		}
-		locations := r.findPotentialLocations(".")
-		discovery, found, err := r.locator.FindTypeDeclarationInLocations(t.String(), locations)
-		if err != nil {
-			return nil, err
-		}
-		if !found {
-			return nil, errors.New(fmt.Sprintf("Type '%s' not found.", t.String()))
-		}
-		al := r.model.AddImport("", discovery.Location)
-		return &ast.SelectorExpr{
-			X:   ast.NewIdent(al),
-			Sel: ast.NewIdent(t.String()),
-		}, nil
+		return r.resolveIdent(t)
 	case *ast.SelectorExpr:
-		if alias, ok := t.X.(*ast.Ident); ok {
-			locations := r.findPotentialLocations(alias.String())
-			discovery, found, err := r.locator.FindTypeDeclarationInLocations(t.Sel.String(), locations)
-			if err != nil {
-				return nil, err
-			}
-			if !found {
-				return nil, errors.New(fmt.Sprintf("Type '%s' not found.", t.Sel.String()))
-			}
-			al := r.model.AddImport("", discovery.Location)
-			return &ast.SelectorExpr{
-				X:   ast.NewIdent(al),
-				Sel: t.Sel,
-			}, nil
-		}
-		return astType, nil
+		return r.resolveSelectorExpr(t)
 	case *ast.ArrayType:
 		return r.resolveArrayType(t)
 	case *ast.StarExpr:
 		return r.resolveStarType(t)
 	}
 	return astType, nil
+}
+
+func (r *Resolver) resolveIdent(ident *ast.Ident) (ast.Expr, error) {
+	if r.isBuiltIn(ident.String()) {
+		return ident, nil
+	}
+	locations := r.findPotentialLocations(".")
+	discovery, found, err := r.locator.FindTypeDeclarationInLocations(ident.String(), locations)
+	if err != nil {
+		return nil, err
+	}
+	if !found {
+		return nil, errors.New(fmt.Sprintf("Type '%s' not found.", ident.String()))
+	}
+	al := r.model.AddImport("", discovery.Location)
+	return &ast.SelectorExpr{
+		X:   ast.NewIdent(al),
+		Sel: ast.NewIdent(ident.String()),
+	}, nil
+}
+
+func (r *Resolver) resolveSelectorExpr(expr *ast.SelectorExpr) (ast.Expr, error) {
+	if alias, ok := expr.X.(*ast.Ident); ok {
+		locations := r.findPotentialLocations(alias.String())
+		discovery, found, err := r.locator.FindTypeDeclarationInLocations(expr.Sel.String(), locations)
+		if err != nil {
+			return nil, err
+		}
+		if !found {
+			return nil, errors.New(fmt.Sprintf("Type '%s' not found.", expr.Sel.String()))
+		}
+		al := r.model.AddImport("", discovery.Location)
+		return &ast.SelectorExpr{
+			X:   ast.NewIdent(al),
+			Sel: expr.Sel,
+		}, nil
+	}
+	return expr, nil
 }
 
 func (r *Resolver) resolveArrayType(astType *ast.ArrayType) (ast.Expr, error) {
