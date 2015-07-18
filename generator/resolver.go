@@ -25,7 +25,6 @@ type importEntry struct {
 type Resolver struct {
 	model   *GeneratorModel
 	locator *Locator
-	astFile *ast.File
 	imports []importEntry
 }
 
@@ -55,6 +54,8 @@ func (r *Resolver) ResolveType(astType ast.Expr) (ast.Expr, error) {
 		return r.resolveArrayType(t)
 	case *ast.MapType:
 		return r.resolveMapType(t)
+	case *ast.ChanType:
+		return r.resolveChanType(t)
 	case *ast.StarExpr:
 		return r.resolveStarType(t)
 	}
@@ -116,6 +117,12 @@ func (r *Resolver) resolveMapType(astType *ast.MapType) (ast.Expr, error) {
 		return nil, err
 	}
 	return astType, nil
+}
+
+func (r *Resolver) resolveChanType(astType *ast.ChanType) (ast.Expr, error) {
+	var err error
+	astType.Value, err = r.ResolveType(astType.Value)
+	return astType, err
 }
 
 func (r *Resolver) resolveStarType(astType *ast.StarExpr) (ast.Expr, error) {
