@@ -83,6 +83,8 @@ func (r *Resolver) ResolveType(astType ast.Expr) (ast.Expr, error) {
 		return astType, nil
 	case *ast.ArrayType:
 		return r.resolveArrayType(t)
+	case *ast.StarExpr:
+		return r.resolveStarType(t)
 	}
 	return astType, nil
 }
@@ -90,6 +92,12 @@ func (r *Resolver) ResolveType(astType ast.Expr) (ast.Expr, error) {
 func (r *Resolver) resolveArrayType(astType *ast.ArrayType) (ast.Expr, error) {
 	var err error
 	astType.Elt, err = r.ResolveType(astType.Elt)
+	return astType, err
+}
+
+func (r *Resolver) resolveStarType(astType *ast.StarExpr) (ast.Expr, error) {
+	var err error
+	astType.X, err = r.ResolveType(astType.X)
 	return astType, err
 }
 

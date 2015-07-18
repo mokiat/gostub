@@ -8,4 +8,5 @@ type MismatchedReference interface {
 	Mismatched(wrong.Job) wrong.Job
 	Array([3]wrong.Job) [3]wrong.Job
 	Slice([]wrong.Job) []wrong.Job
+	Pointer(*wrong.Job) *wrong.Job
 }

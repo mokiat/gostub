@@ -8,4 +8,5 @@ type AliasedReference interface {
 	Aliased(custom.User) custom.User
 	Array([3]custom.User) [3]custom.User
 	Slice([]custom.User) []custom.User
+	Pointer(*custom.User) *custom.User
 }
