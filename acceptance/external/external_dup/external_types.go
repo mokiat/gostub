@@ -10,3 +10,7 @@ package external
 type Address struct {
 	Different bool
 }
+
+type Runner interface {
+	Run(count int) error
+}

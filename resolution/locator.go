@@ -1,6 +1,7 @@
-package generator
+package resolution
 
 import (
+	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
@@ -24,20 +25,34 @@ type TypeDiscovery struct {
 	Spec     *ast.TypeSpec
 }
 
-func (l *Locator) FindTypeDeclarationInLocations(name string, candidateLocations []string) (TypeDiscovery, bool, error) {
-	for _, location := range candidateLocations {
-		discovery, found, err := l.FindTypeDeclarationInLocation(name, location)
-		if err != nil {
-			return TypeDiscovery{}, false, err
-		}
-		if found {
-			return discovery, true, nil
-		}
-	}
-	return TypeDiscovery{}, false, nil
+func (l *Locator) FindIdentType(context *LocatorContext, ref *ast.Ident) (TypeDiscovery, error) {
+	locations := context.CandidateLocations(".")
+	return l.findTypeDeclarationInLocations(ref.String(), locations)
 }
 
-func (l *Locator) FindTypeDeclarationInLocation(name string, location string) (TypeDiscovery, bool, error) {
+func (l *Locator) FindSelectorType(context *LocatorContext, ref *ast.SelectorExpr) (TypeDiscovery, error) {
+	aliasIdent, ok := ref.X.(*ast.Ident)
+	if !ok {
+		panic("Selector expression is not a reference!")
+	}
+	locations := context.CandidateLocations(aliasIdent.String())
+	return l.findTypeDeclarationInLocations(ref.Sel.String(), locations)
+}
+
+func (l *Locator) findTypeDeclarationInLocations(name string, candidateLocations []string) (TypeDiscovery, error) {
+	for _, location := range candidateLocations {
+		discovery, found, err := l.findTypeDeclarationInLocation(name, location)
+		if err != nil {
+			return TypeDiscovery{}, err
+		}
+		if found {
+			return discovery, nil
+		}
+	}
+	return TypeDiscovery{}, &TypeNotFoundError{Name: name}
+}
+
+func (l *Locator) findTypeDeclarationInLocation(name string, location string) (TypeDiscovery, bool, error) {
 	discoveries, err := l.discoverTypes(location)
 	if err != nil {
 		return TypeDiscovery{}, false, err
@@ -80,4 +95,12 @@ func (l *Locator) discoverTypes(location string) ([]TypeDiscovery, error) {
 	}
 	l.cache[location] = discoveries
 	return discoveries, nil
+}
+
+type TypeNotFoundError struct {
+	Name string
+}
+
+func (e *TypeNotFoundError) Error() string {
+	return fmt.Sprintf("Could not find '%s' type.", e.Name)
 }

@@ -167,3 +167,18 @@ func EachMethodInInterfaceType(iFaceType *ast.InterfaceType) <-chan *ast.Field {
 	}()
 	return result
 }
+
+func EachSubInterfaceInInterfaceType(iFaceType *ast.InterfaceType) <-chan *ast.Field {
+	result := make(chan *ast.Field)
+	go func() {
+		if iFaceType.Methods != nil {
+			for _, method := range iFaceType.Methods.List {
+				if _, ok := method.Type.(*ast.SelectorExpr); ok {
+					result <- method
+				}
+			}
+		}
+		close(result)
+	}()
+	return result
+}

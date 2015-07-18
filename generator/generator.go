@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"go/ast"
 
+	"github.com/momchil-atanasov/gostub/resolution"
 	"github.com/momchil-atanasov/gostub/util"
 )
 
@@ -34,26 +35,18 @@ type Config struct {
 }
 
 func Generate(config Config) error {
-	model := NewGeneratorModel(config.TargetPackageName, config.TargetStructName)
-	locator := NewLocator()
-	resolver := NewResolver(model, locator)
+	locator := resolution.NewLocator()
 
-	discovery, found, err := locator.FindTypeDeclarationInLocation(config.SourceInterfaceName, config.SourcePackageLocation)
+	// Do an initial search only with what we have as input
+	context := resolution.NewSingleLocationContext(config.SourcePackageLocation)
+	discovery, err := locator.FindIdentType(context, ast.NewIdent(config.SourceInterfaceName))
 	if err != nil {
 		return err
 	}
-	if !found {
-		return errors.New(fmt.Sprintf("Could not find interface '%s'.", config.SourceInterfaceName))
-	}
-	iFaceType, isIFace := discovery.Spec.Type.(*ast.InterfaceType)
-	if !isIFace {
-		return errors.New(fmt.Sprintf("Type '%s' in '%s' is not interface!", config.SourceInterfaceName, config.SourcePackageLocation))
-	}
 
-	resolver.SetContext(discovery.File, config.SourcePackageLocation)
-	stubGen := newGenerator(model, resolver)
-
-	err = stubGen.generateIFace(iFaceType)
+	model := NewGeneratorModel(config.TargetPackageName, config.TargetStructName)
+	stubGen := newGenerator(model, locator)
+	err = stubGen.ProcessInterface(discovery)
 	if err != nil {
 		return err
 	}
@@ -67,19 +60,26 @@ func Generate(config Config) error {
 	return nil
 }
 
-func newGenerator(model *GeneratorModel, resolver *Resolver) *stubGenerator {
+func newGenerator(model *GeneratorModel, locator *resolution.Locator) *stubGenerator {
 	return &stubGenerator{
 		model:    model,
-		resolver: resolver,
+		locator:  locator,
+		resolver: NewResolver(model, locator),
 	}
 }
 
 type stubGenerator struct {
 	model    *GeneratorModel
+	locator  *resolution.Locator
 	resolver *Resolver
 }
 
-func (g *stubGenerator) generateIFace(iFaceType *ast.InterfaceType) error {
+func (g *stubGenerator) ProcessInterface(discovery resolution.TypeDiscovery) error {
+	g.resolver.SetContext(discovery.File, discovery.Location)
+	iFaceType, isIFace := discovery.Spec.Type.(*ast.InterfaceType)
+	if !isIFace {
+		return errors.New(fmt.Sprintf("Type '%s' in '%s' is not interface!", discovery.Spec.Name.String(), discovery.Location))
+	}
 	for method := range util.EachMethodInInterfaceType(iFaceType) {
 		funcType := method.Type.(*ast.FuncType)
 		source := &MethodConfig{
@@ -90,6 +90,31 @@ func (g *stubGenerator) generateIFace(iFaceType *ast.InterfaceType) error {
 		err := g.model.AddMethod(source)
 		if err != nil {
 			return err
+		}
+	}
+	context := resolution.NewASTFileLocatorContext(discovery.File, discovery.Location)
+	for subIFaceType := range util.EachSubInterfaceInInterfaceType(iFaceType) {
+		switch t := subIFaceType.Type.(type) {
+		case *ast.Ident:
+			discovery, err := g.locator.FindIdentType(context, t)
+			if err != nil {
+				return err
+			}
+			err = g.ProcessInterface(discovery)
+			if err != nil {
+				return err
+			}
+		case *ast.SelectorExpr:
+			discovery, err := g.locator.FindSelectorType(context, t)
+			if err != nil {
+				return err
+			}
+			err = g.ProcessInterface(discovery)
+			if err != nil {
+				return err
+			}
+		default:
+			panic("Unknown statement in interface declaration.")
 		}
 	}
 	return nil
