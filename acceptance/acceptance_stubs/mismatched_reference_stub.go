@@ -15,12 +15,20 @@ type MismatchedReferenceStub struct {
 	mismatchedReturns struct {
 		result1 alias1.Job
 	}
-	ArrayStub        func(arg1 []alias1.Job) (result1 []alias1.Job)
+	ArrayStub        func(arg1 [3]alias1.Job) (result1 [3]alias1.Job)
 	arrayMutex       sync.RWMutex
 	arrayArgsForCall []struct {
-		arg1 []alias1.Job
+		arg1 [3]alias1.Job
 	}
 	arrayReturns struct {
+		result1 [3]alias1.Job
+	}
+	SliceStub        func(arg1 []alias1.Job) (result1 []alias1.Job)
+	sliceMutex       sync.RWMutex
+	sliceArgsForCall []struct {
+		arg1 []alias1.Job
+	}
+	sliceReturns struct {
 		result1 []alias1.Job
 	}
 }
@@ -54,11 +62,11 @@ func (stub *MismatchedReferenceStub) MismatchedReturns(result1 alias1.Job) {
 		result1 alias1.Job
 	}{result1}
 }
-func (stub *MismatchedReferenceStub) Array(arg1 []alias1.Job) []alias1.Job {
+func (stub *MismatchedReferenceStub) Array(arg1 [3]alias1.Job) [3]alias1.Job {
 	stub.arrayMutex.Lock()
 	defer stub.arrayMutex.Unlock()
 	stub.arrayArgsForCall = append(stub.arrayArgsForCall, struct {
-		arg1 []alias1.Job
+		arg1 [3]alias1.Job
 	}{arg1})
 	if stub.ArrayStub != nil {
 		return stub.ArrayStub(arg1)
@@ -71,15 +79,44 @@ func (stub *MismatchedReferenceStub) ArrayCallCount() int {
 	defer stub.arrayMutex.RUnlock()
 	return len(stub.arrayArgsForCall)
 }
-func (stub *MismatchedReferenceStub) ArrayArgsForCall(index int) []alias1.Job {
+func (stub *MismatchedReferenceStub) ArrayArgsForCall(index int) [3]alias1.Job {
 	stub.arrayMutex.RLock()
 	defer stub.arrayMutex.RUnlock()
 	return stub.arrayArgsForCall[index].arg1
 }
-func (stub *MismatchedReferenceStub) ArrayReturns(result1 []alias1.Job) {
+func (stub *MismatchedReferenceStub) ArrayReturns(result1 [3]alias1.Job) {
 	stub.arrayMutex.Lock()
 	defer stub.arrayMutex.Unlock()
 	stub.arrayReturns = struct {
+		result1 [3]alias1.Job
+	}{result1}
+}
+func (stub *MismatchedReferenceStub) Slice(arg1 []alias1.Job) []alias1.Job {
+	stub.sliceMutex.Lock()
+	defer stub.sliceMutex.Unlock()
+	stub.sliceArgsForCall = append(stub.sliceArgsForCall, struct {
+		arg1 []alias1.Job
+	}{arg1})
+	if stub.SliceStub != nil {
+		return stub.SliceStub(arg1)
+	} else {
+		return stub.sliceReturns.result1
+	}
+}
+func (stub *MismatchedReferenceStub) SliceCallCount() int {
+	stub.sliceMutex.RLock()
+	defer stub.sliceMutex.RUnlock()
+	return len(stub.sliceArgsForCall)
+}
+func (stub *MismatchedReferenceStub) SliceArgsForCall(index int) []alias1.Job {
+	stub.sliceMutex.RLock()
+	defer stub.sliceMutex.RUnlock()
+	return stub.sliceArgsForCall[index].arg1
+}
+func (stub *MismatchedReferenceStub) SliceReturns(result1 []alias1.Job) {
+	stub.sliceMutex.Lock()
+	defer stub.sliceMutex.Unlock()
+	stub.sliceReturns = struct {
 		result1 []alias1.Job
 	}{result1}
 }
