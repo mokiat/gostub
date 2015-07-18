@@ -62,6 +62,8 @@ func (r *Resolver) ResolveType(astType ast.Expr) (ast.Expr, error) {
 		return r.resolveChanType(t)
 	case *ast.StarExpr:
 		return r.resolveStarType(t)
+	case *ast.FuncType:
+		return r.resolveFuncType(t)
 	}
 	return astType, nil
 }
@@ -133,6 +135,23 @@ func (r *Resolver) resolveStarType(astType *ast.StarExpr) (ast.Expr, error) {
 	var err error
 	astType.X, err = r.ResolveType(astType.X)
 	return astType, err
+}
+
+func (r *Resolver) resolveFuncType(astType *ast.FuncType) (ast.Expr, error) {
+	var err error
+	for param := range util.EachParamInFunc(astType) {
+		param.Type, err = r.ResolveType(param.Type)
+		if err != nil {
+			return nil, err
+		}
+	}
+	for result := range util.EachResultInFunc(astType) {
+		result.Type, err = r.ResolveType(result.Type)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return astType, nil
 }
 
 func (r *Resolver) isBuiltIn(name string) bool {
