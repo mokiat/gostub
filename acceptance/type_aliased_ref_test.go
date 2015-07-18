@@ -8,15 +8,15 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("EmbeddedReference", func() {
-	var stub *acceptance_stubs.EmbeddedReferenceStub
+var _ = Describe("AliasedRefSupport", func() {
+	var stub *acceptance_stubs.AliasedRefSupportStub
 
 	BeforeEach(func() {
-		stub = new(acceptance_stubs.EmbeddedReferenceStub)
+		stub = new(acceptance_stubs.AliasedRefSupportStub)
 	})
 
 	It("stub is assignable to interface", func() {
-		_, assignable := interface{}(stub).(EmbeddedReference)
+		_, assignable := interface{}(stub).(AliasedRefSupport)
 		Ω(assignable).Should(BeTrue())
 	})
 })

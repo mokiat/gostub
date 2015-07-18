@@ -8,15 +8,15 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("MismatchedReference", func() {
-	var stub *acceptance_stubs.MismatchedReferenceStub
+var _ = Describe("ExternalRefSupport", func() {
+	var stub *acceptance_stubs.ExternalRefSupportStub
 
 	BeforeEach(func() {
-		stub = new(acceptance_stubs.MismatchedReferenceStub)
+		stub = new(acceptance_stubs.ExternalRefSupportStub)
 	})
 
 	It("stub is assignable to interface", func() {
-		_, assignable := interface{}(stub).(MismatchedReference)
+		_, assignable := interface{}(stub).(ExternalRefSupport)
 		Ω(assignable).Should(BeTrue())
 	})
 })
