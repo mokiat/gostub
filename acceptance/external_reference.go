@@ -6,4 +6,5 @@ import "github.com/momchil-atanasov/gostub/acceptance/external"
 
 type ExternalReference interface {
 	External(external.Address) external.Address
+	Array([]external.Address) []external.Address
 }

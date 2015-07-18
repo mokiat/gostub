@@ -5,5 +5,6 @@ import "github.com/momchil-atanasov/gostub/acceptance/mismatch"
 //go:generate gostub MismatchedReference
 
 type MismatchedReference interface {
-	Mismatched(wrong.Job)
+	Mismatched(wrong.Job) wrong.Job
+	Array([]wrong.Job) []wrong.Job
 }

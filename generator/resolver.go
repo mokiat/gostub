@@ -81,8 +81,16 @@ func (r *Resolver) ResolveType(astType ast.Expr) (ast.Expr, error) {
 			}, nil
 		}
 		return astType, nil
+	case *ast.ArrayType:
+		return r.resolveArrayType(t)
 	}
 	return astType, nil
+}
+
+func (r *Resolver) resolveArrayType(astType *ast.ArrayType) (ast.Expr, error) {
+	var err error
+	astType.Elt, err = r.ResolveType(astType.Elt)
+	return astType, err
 }
 
 func (r *Resolver) isBuiltIn(name string) bool {
