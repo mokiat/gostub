@@ -30,6 +30,10 @@ type Resolver struct {
 
 func (r *Resolver) SetContext(astFile *ast.File, fileLocation string) {
 	r.imports = []importEntry{}
+	r.imports = append(r.imports, importEntry{
+		Alias:    ".",
+		Location: fileLocation,
+	})
 	for decl := range util.EachGenericDeclarationInFile(astFile) {
 		for spec := range util.EachSpecificationInGenericDeclaration(decl) {
 			if importSpec, ok := spec.(*ast.ImportSpec); ok {
@@ -137,6 +141,15 @@ func (r *Resolver) isBuiltIn(name string) bool {
 }
 
 func (r *Resolver) findPotentialLocations(alias string) []string {
+	if alias == "." {
+		result := []string{}
+		for _, imp := range r.imports {
+			if imp.Alias == "." {
+				result = append(result, imp.Location)
+			}
+		}
+		return result
+	}
 	for _, imp := range r.imports {
 		if imp.Alias == alias {
 			return []string{imp.Location}
