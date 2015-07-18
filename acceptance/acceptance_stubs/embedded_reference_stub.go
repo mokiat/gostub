@@ -15,14 +15,6 @@ type EmbeddedReferenceStub struct {
 	embeddedReturns struct {
 		result1 alias1.Resource
 	}
-	ArrayStub        func(arg1 [3]alias1.Resource) (result1 [3]alias1.Resource)
-	arrayMutex       sync.RWMutex
-	arrayArgsForCall []struct {
-		arg1 [3]alias1.Resource
-	}
-	arrayReturns struct {
-		result1 [3]alias1.Resource
-	}
 	SliceStub        func(arg1 []alias1.Resource) (result1 []alias1.Resource)
 	sliceMutex       sync.RWMutex
 	sliceArgsForCall []struct {
@@ -68,35 +60,6 @@ func (stub *EmbeddedReferenceStub) EmbeddedReturns(result1 alias1.Resource) {
 	defer stub.embeddedMutex.Unlock()
 	stub.embeddedReturns = struct {
 		result1 alias1.Resource
-	}{result1}
-}
-func (stub *EmbeddedReferenceStub) Array(arg1 [3]alias1.Resource) [3]alias1.Resource {
-	stub.arrayMutex.Lock()
-	defer stub.arrayMutex.Unlock()
-	stub.arrayArgsForCall = append(stub.arrayArgsForCall, struct {
-		arg1 [3]alias1.Resource
-	}{arg1})
-	if stub.ArrayStub != nil {
-		return stub.ArrayStub(arg1)
-	} else {
-		return stub.arrayReturns.result1
-	}
-}
-func (stub *EmbeddedReferenceStub) ArrayCallCount() int {
-	stub.arrayMutex.RLock()
-	defer stub.arrayMutex.RUnlock()
-	return len(stub.arrayArgsForCall)
-}
-func (stub *EmbeddedReferenceStub) ArrayArgsForCall(index int) [3]alias1.Resource {
-	stub.arrayMutex.RLock()
-	defer stub.arrayMutex.RUnlock()
-	return stub.arrayArgsForCall[index].arg1
-}
-func (stub *EmbeddedReferenceStub) ArrayReturns(result1 [3]alias1.Resource) {
-	stub.arrayMutex.Lock()
-	defer stub.arrayMutex.Unlock()
-	stub.arrayReturns = struct {
-		result1 [3]alias1.Resource
 	}{result1}
 }
 func (stub *EmbeddedReferenceStub) Slice(arg1 []alias1.Resource) []alias1.Resource {

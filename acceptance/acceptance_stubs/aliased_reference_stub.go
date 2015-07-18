@@ -15,14 +15,6 @@ type AliasedReferenceStub struct {
 	aliasedReturns struct {
 		result1 alias1.User
 	}
-	ArrayStub        func(arg1 [3]alias1.User) (result1 [3]alias1.User)
-	arrayMutex       sync.RWMutex
-	arrayArgsForCall []struct {
-		arg1 [3]alias1.User
-	}
-	arrayReturns struct {
-		result1 [3]alias1.User
-	}
 	SliceStub        func(arg1 []alias1.User) (result1 []alias1.User)
 	sliceMutex       sync.RWMutex
 	sliceArgsForCall []struct {
@@ -68,35 +60,6 @@ func (stub *AliasedReferenceStub) AliasedReturns(result1 alias1.User) {
 	defer stub.aliasedMutex.Unlock()
 	stub.aliasedReturns = struct {
 		result1 alias1.User
-	}{result1}
-}
-func (stub *AliasedReferenceStub) Array(arg1 [3]alias1.User) [3]alias1.User {
-	stub.arrayMutex.Lock()
-	defer stub.arrayMutex.Unlock()
-	stub.arrayArgsForCall = append(stub.arrayArgsForCall, struct {
-		arg1 [3]alias1.User
-	}{arg1})
-	if stub.ArrayStub != nil {
-		return stub.ArrayStub(arg1)
-	} else {
-		return stub.arrayReturns.result1
-	}
-}
-func (stub *AliasedReferenceStub) ArrayCallCount() int {
-	stub.arrayMutex.RLock()
-	defer stub.arrayMutex.RUnlock()
-	return len(stub.arrayArgsForCall)
-}
-func (stub *AliasedReferenceStub) ArrayArgsForCall(index int) [3]alias1.User {
-	stub.arrayMutex.RLock()
-	defer stub.arrayMutex.RUnlock()
-	return stub.arrayArgsForCall[index].arg1
-}
-func (stub *AliasedReferenceStub) ArrayReturns(result1 [3]alias1.User) {
-	stub.arrayMutex.Lock()
-	defer stub.arrayMutex.Unlock()
-	stub.arrayReturns = struct {
-		result1 [3]alias1.User
 	}{result1}
 }
 func (stub *AliasedReferenceStub) Slice(arg1 []alias1.User) []alias1.User {
