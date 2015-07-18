@@ -15,14 +15,6 @@ type AliasedReferenceStub struct {
 	aliasedReturns struct {
 		result1 alias1.User
 	}
-	PointerStub        func(arg1 *alias1.User) (result1 *alias1.User)
-	pointerMutex       sync.RWMutex
-	pointerArgsForCall []struct {
-		arg1 *alias1.User
-	}
-	pointerReturns struct {
-		result1 *alias1.User
-	}
 }
 
 func (stub *AliasedReferenceStub) Aliased(arg1 alias1.User) alias1.User {
@@ -52,34 +44,5 @@ func (stub *AliasedReferenceStub) AliasedReturns(result1 alias1.User) {
 	defer stub.aliasedMutex.Unlock()
 	stub.aliasedReturns = struct {
 		result1 alias1.User
-	}{result1}
-}
-func (stub *AliasedReferenceStub) Pointer(arg1 *alias1.User) *alias1.User {
-	stub.pointerMutex.Lock()
-	defer stub.pointerMutex.Unlock()
-	stub.pointerArgsForCall = append(stub.pointerArgsForCall, struct {
-		arg1 *alias1.User
-	}{arg1})
-	if stub.PointerStub != nil {
-		return stub.PointerStub(arg1)
-	} else {
-		return stub.pointerReturns.result1
-	}
-}
-func (stub *AliasedReferenceStub) PointerCallCount() int {
-	stub.pointerMutex.RLock()
-	defer stub.pointerMutex.RUnlock()
-	return len(stub.pointerArgsForCall)
-}
-func (stub *AliasedReferenceStub) PointerArgsForCall(index int) *alias1.User {
-	stub.pointerMutex.RLock()
-	defer stub.pointerMutex.RUnlock()
-	return stub.pointerArgsForCall[index].arg1
-}
-func (stub *AliasedReferenceStub) PointerReturns(result1 *alias1.User) {
-	stub.pointerMutex.Lock()
-	defer stub.pointerMutex.Unlock()
-	stub.pointerReturns = struct {
-		result1 *alias1.User
 	}{result1}
 }

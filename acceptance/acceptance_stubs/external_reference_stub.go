@@ -15,14 +15,6 @@ type ExternalReferenceStub struct {
 	externalReturns struct {
 		result1 alias1.Address
 	}
-	PointerStub        func(arg1 *alias1.Address) (result1 *alias1.Address)
-	pointerMutex       sync.RWMutex
-	pointerArgsForCall []struct {
-		arg1 *alias1.Address
-	}
-	pointerReturns struct {
-		result1 *alias1.Address
-	}
 }
 
 func (stub *ExternalReferenceStub) External(arg1 alias1.Address) alias1.Address {
@@ -52,34 +44,5 @@ func (stub *ExternalReferenceStub) ExternalReturns(result1 alias1.Address) {
 	defer stub.externalMutex.Unlock()
 	stub.externalReturns = struct {
 		result1 alias1.Address
-	}{result1}
-}
-func (stub *ExternalReferenceStub) Pointer(arg1 *alias1.Address) *alias1.Address {
-	stub.pointerMutex.Lock()
-	defer stub.pointerMutex.Unlock()
-	stub.pointerArgsForCall = append(stub.pointerArgsForCall, struct {
-		arg1 *alias1.Address
-	}{arg1})
-	if stub.PointerStub != nil {
-		return stub.PointerStub(arg1)
-	} else {
-		return stub.pointerReturns.result1
-	}
-}
-func (stub *ExternalReferenceStub) PointerCallCount() int {
-	stub.pointerMutex.RLock()
-	defer stub.pointerMutex.RUnlock()
-	return len(stub.pointerArgsForCall)
-}
-func (stub *ExternalReferenceStub) PointerArgsForCall(index int) *alias1.Address {
-	stub.pointerMutex.RLock()
-	defer stub.pointerMutex.RUnlock()
-	return stub.pointerArgsForCall[index].arg1
-}
-func (stub *ExternalReferenceStub) PointerReturns(result1 *alias1.Address) {
-	stub.pointerMutex.Lock()
-	defer stub.pointerMutex.Unlock()
-	stub.pointerReturns = struct {
-		result1 *alias1.Address
 	}{result1}
 }
