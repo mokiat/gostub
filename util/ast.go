@@ -183,3 +183,16 @@ func EachSubInterfaceInInterfaceType(iFaceType *ast.InterfaceType) <-chan *ast.F
 	}()
 	return result
 }
+
+func EachFieldInStruct(astType *ast.StructType) <-chan *ast.Field {
+	result := make(chan *ast.Field)
+	go func() {
+		if astType.Fields != nil {
+			for _, field := range astType.Fields.List {
+				result <- field
+			}
+		}
+		close(result)
+	}()
+	return result
+}
