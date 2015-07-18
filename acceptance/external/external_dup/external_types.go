@@ -12,5 +12,5 @@ type Address struct {
 }
 
 type Runner interface {
-	Run(count int) error
+	Run(Address) error
 }

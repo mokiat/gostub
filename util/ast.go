@@ -173,7 +173,8 @@ func EachSubInterfaceInInterfaceType(iFaceType *ast.InterfaceType) <-chan *ast.F
 	go func() {
 		if iFaceType.Methods != nil {
 			for _, method := range iFaceType.Methods.List {
-				if _, ok := method.Type.(*ast.SelectorExpr); ok {
+				switch method.Type.(type) {
+				case *ast.Ident, *ast.SelectorExpr:
 					result <- method
 				}
 			}

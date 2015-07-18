@@ -2,6 +2,8 @@ package acceptance_stubs
 
 import (
 	sync "sync"
+
+	alias1 "github.com/momchil-atanasov/gostub/acceptance/external/external_dup"
 )
 
 type ExternalEmbeddedInterfaceSupportStub struct {
@@ -13,10 +15,10 @@ type ExternalEmbeddedInterfaceSupportStub struct {
 	methodReturns struct {
 		result1 int
 	}
-	RunStub        func(arg1 int) (result1 error)
+	RunStub        func(arg1 alias1.Address) (result1 error)
 	runMutex       sync.RWMutex
 	runArgsForCall []struct {
-		arg1 int
+		arg1 alias1.Address
 	}
 	runReturns struct {
 		result1 error
@@ -52,11 +54,11 @@ func (stub *ExternalEmbeddedInterfaceSupportStub) MethodReturns(result1 int) {
 		result1 int
 	}{result1}
 }
-func (stub *ExternalEmbeddedInterfaceSupportStub) Run(arg1 int) error {
+func (stub *ExternalEmbeddedInterfaceSupportStub) Run(arg1 alias1.Address) error {
 	stub.runMutex.Lock()
 	defer stub.runMutex.Unlock()
 	stub.runArgsForCall = append(stub.runArgsForCall, struct {
-		arg1 int
+		arg1 alias1.Address
 	}{arg1})
 	if stub.RunStub != nil {
 		return stub.RunStub(arg1)
@@ -69,7 +71,7 @@ func (stub *ExternalEmbeddedInterfaceSupportStub) RunCallCount() int {
 	defer stub.runMutex.RUnlock()
 	return len(stub.runArgsForCall)
 }
-func (stub *ExternalEmbeddedInterfaceSupportStub) RunArgsForCall(index int) int {
+func (stub *ExternalEmbeddedInterfaceSupportStub) RunArgsForCall(index int) alias1.Address {
 	stub.runMutex.RLock()
 	defer stub.runMutex.RUnlock()
 	return stub.runArgsForCall[index].arg1
