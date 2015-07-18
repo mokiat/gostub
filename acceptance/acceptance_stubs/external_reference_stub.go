@@ -15,14 +15,6 @@ type ExternalReferenceStub struct {
 	externalReturns struct {
 		result1 alias1.Address
 	}
-	SliceStub        func(arg1 []alias1.Address) (result1 []alias1.Address)
-	sliceMutex       sync.RWMutex
-	sliceArgsForCall []struct {
-		arg1 []alias1.Address
-	}
-	sliceReturns struct {
-		result1 []alias1.Address
-	}
 	PointerStub        func(arg1 *alias1.Address) (result1 *alias1.Address)
 	pointerMutex       sync.RWMutex
 	pointerArgsForCall []struct {
@@ -60,35 +52,6 @@ func (stub *ExternalReferenceStub) ExternalReturns(result1 alias1.Address) {
 	defer stub.externalMutex.Unlock()
 	stub.externalReturns = struct {
 		result1 alias1.Address
-	}{result1}
-}
-func (stub *ExternalReferenceStub) Slice(arg1 []alias1.Address) []alias1.Address {
-	stub.sliceMutex.Lock()
-	defer stub.sliceMutex.Unlock()
-	stub.sliceArgsForCall = append(stub.sliceArgsForCall, struct {
-		arg1 []alias1.Address
-	}{arg1})
-	if stub.SliceStub != nil {
-		return stub.SliceStub(arg1)
-	} else {
-		return stub.sliceReturns.result1
-	}
-}
-func (stub *ExternalReferenceStub) SliceCallCount() int {
-	stub.sliceMutex.RLock()
-	defer stub.sliceMutex.RUnlock()
-	return len(stub.sliceArgsForCall)
-}
-func (stub *ExternalReferenceStub) SliceArgsForCall(index int) []alias1.Address {
-	stub.sliceMutex.RLock()
-	defer stub.sliceMutex.RUnlock()
-	return stub.sliceArgsForCall[index].arg1
-}
-func (stub *ExternalReferenceStub) SliceReturns(result1 []alias1.Address) {
-	stub.sliceMutex.Lock()
-	defer stub.sliceMutex.Unlock()
-	stub.sliceReturns = struct {
-		result1 []alias1.Address
 	}{result1}
 }
 func (stub *ExternalReferenceStub) Pointer(arg1 *alias1.Address) *alias1.Address {

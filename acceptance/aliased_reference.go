@@ -6,6 +6,5 @@ import custom "github.com/momchil-atanasov/gostub/acceptance/aliased"
 
 type AliasedReference interface {
 	Aliased(custom.User) custom.User
-	Slice([]custom.User) []custom.User
 	Pointer(*custom.User) *custom.User
 }

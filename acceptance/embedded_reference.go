@@ -6,6 +6,5 @@ import . "github.com/momchil-atanasov/gostub/acceptance/embedded"
 
 type EmbeddedReference interface {
 	Embedded(Resource) Resource
-	Slice([]Resource) []Resource
 	Pointer(*Resource) *Resource
 }
