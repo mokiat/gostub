@@ -9,6 +9,7 @@ package external
 
 type Address struct {
 	Different bool
+	Value     int
 }
 
 type Runner interface {

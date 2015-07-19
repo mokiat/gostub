@@ -21,6 +21,22 @@ func GetFieldsAsAnonymous(fields []*ast.Field) []*ast.Field {
 	return result
 }
 
+func FieldsWithoutEllipsis(fields []*ast.Field) []*ast.Field {
+	result := make([]*ast.Field, len(fields))
+	for i, field := range fields {
+		result[i] = &ast.Field{
+			Names: field.Names,
+			Type:  field.Type,
+		}
+		if ellipsisType, ok := field.Type.(*ast.Ellipsis); ok {
+			result[i].Type = &ast.ArrayType{
+				Elt: ellipsisType.Elt,
+			}
+		}
+	}
+	return result
+}
+
 func FieldReuseCount(field *ast.Field) int {
 	if len(field.Names) == 0 {
 		return 1

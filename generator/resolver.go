@@ -50,6 +50,8 @@ func (r *Resolver) ResolveType(astType ast.Expr) (ast.Expr, error) {
 		return r.resolveStructType(t)
 	case *ast.InterfaceType:
 		return r.resolveInterfaceType(t)
+	case *ast.Ellipsis:
+		return r.resolveEllipsisType(t)
 	}
 	return astType, nil
 }
@@ -153,6 +155,12 @@ func (r *Resolver) resolveInterfaceType(astType *ast.InterfaceType) (ast.Expr, e
 		}
 	}
 	return astType, nil
+}
+
+func (r *Resolver) resolveEllipsisType(astType *ast.Ellipsis) (ast.Expr, error) {
+	var err error
+	astType.Elt, err = r.ResolveType(astType.Elt)
+	return astType, err
 }
 
 func (r *Resolver) isBuiltIn(name string) bool {

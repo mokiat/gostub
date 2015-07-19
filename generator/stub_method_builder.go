@@ -102,7 +102,7 @@ func (b *StubMethodBuilder) Build() *ast.FuncDecl {
 					&ast.CompositeLit{
 						Type: &ast.StructType{
 							Fields: &ast.FieldList{
-								List: b.params,
+								List: util.FieldsWithoutEllipsis(b.params),
 							},
 						},
 						Elts: paramSelectors,
@@ -112,23 +112,35 @@ func (b *StubMethodBuilder) Build() *ast.FuncDecl {
 		},
 	})
 
+	hasEllipsis := false
+	if parCount := len(b.params); parCount > 0 {
+		if _, ok := b.params[parCount-1].Type.(*ast.Ellipsis); ok {
+			hasEllipsis = true
+		}
+	}
+
 	b.methodBuilder.AddStatement(&ast.IfStmt{
 		Cond: &ast.BinaryExpr{
 			X:  b.stubFieldSelector,
 			Op: token.NEQ,
 			Y:  ast.NewIdent("nil"),
 		},
-		Body: b.buildCallStubMethodCode(paramSelectors),
+		Body: b.buildCallStubMethodCode(paramSelectors, hasEllipsis),
 		Else: b.buildReturnReturnsCode(),
 	})
 
 	return b.methodBuilder.Build()
 }
 
-func (b *StubMethodBuilder) buildCallStubMethodCode(args []ast.Expr) *ast.BlockStmt {
+func (b *StubMethodBuilder) buildCallStubMethodCode(args []ast.Expr, hasEllipsis bool) *ast.BlockStmt {
+	ellipsisPos := token.NoPos
+	if hasEllipsis {
+		ellipsisPos = 1
+	}
 	callExpr := &ast.CallExpr{
-		Fun:  b.stubFieldSelector,
-		Args: args,
+		Ellipsis: ellipsisPos,
+		Fun:      b.stubFieldSelector,
+		Args:     args,
 	}
 	var stmt ast.Stmt
 	if len(b.results) > 0 {
@@ -141,7 +153,6 @@ func (b *StubMethodBuilder) buildCallStubMethodCode(args []ast.Expr) *ast.BlockS
 		stmt = &ast.ExprStmt{
 			X: callExpr,
 		}
-
 	}
 	return &ast.BlockStmt{
 		List: []ast.Stmt{

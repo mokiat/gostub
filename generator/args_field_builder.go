@@ -44,7 +44,7 @@ func (b *MethodArgsFieldBuilder) Build() *ast.Field {
 	return util.CreateField(b.fieldName, &ast.ArrayType{
 		Elt: &ast.StructType{
 			Fields: &ast.FieldList{
-				List: b.params,
+				List: util.FieldsWithoutEllipsis(b.params),
 			},
 		},
 	})
