@@ -2,7 +2,6 @@ package generator
 
 import (
 	"go/ast"
-	"strings"
 
 	"github.com/momchil-atanasov/gostub/resolution"
 	"github.com/momchil-atanasov/gostub/util"
@@ -13,11 +12,6 @@ func NewResolver(model *GeneratorModel, locator *resolution.Locator) *Resolver {
 		model:   model,
 		locator: locator,
 	}
-}
-
-type importEntry struct {
-	Alias    string
-	Location string
 }
 
 type Resolver struct {
@@ -72,19 +66,15 @@ func (r *Resolver) resolveIdent(ident *ast.Ident) (ast.Expr, error) {
 }
 
 func (r *Resolver) resolveSelectorExpr(expr *ast.SelectorExpr) (ast.Expr, error) {
-	if _, ok := expr.X.(*ast.Ident); ok {
-		discovery, err := r.locator.FindSelectorType(r.context, expr)
-		if err != nil {
-			return nil, err
-		}
-		al := r.model.AddImport("", discovery.Location)
-		return &ast.SelectorExpr{
-			X:   ast.NewIdent(al),
-			Sel: expr.Sel,
-		}, nil
+	discovery, err := r.locator.FindSelectorType(r.context, expr)
+	if err != nil {
+		return nil, err
 	}
-	// TODO: Maybe return an error
-	return expr, nil
+	al := r.model.AddImport("", discovery.Location)
+	return &ast.SelectorExpr{
+		X:   ast.NewIdent(al),
+		Sel: expr.Sel,
+	}, nil
 }
 
 func (r *Resolver) resolveArrayType(astType *ast.ArrayType) (ast.Expr, error) {
@@ -163,7 +153,29 @@ func (r *Resolver) resolveEllipsisType(astType *ast.Ellipsis) (ast.Expr, error) 
 	return astType, err
 }
 
+// isBuiltIn should return whether a type, specified by its name,
+// is native to the language or not.
 func (r *Resolver) isBuiltIn(name string) bool {
-	// Either builtin or private (which is not supported either way)
-	return strings.ToLower(name) == name
+	switch name {
+	case "bool":
+		return true
+	case "byte":
+		return true
+	case "complex64", "complex128":
+		return true
+	case "error":
+		return true
+	case "float32", "float64":
+		return true
+	case "int", "int8", "int16", "int32", "int64":
+		return true
+	case "rune", "string":
+		return true
+	case "uint", "uint8", "uint16", "uint32", "uint64":
+		return true
+	case "uintptr":
+		return true
+	default:
+		return false
+	}
 }
