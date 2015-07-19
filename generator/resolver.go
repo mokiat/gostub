@@ -120,13 +120,13 @@ func (r *Resolver) resolveStarType(astType *ast.StarExpr) (ast.Expr, error) {
 
 func (r *Resolver) resolveFuncType(astType *ast.FuncType) (ast.Expr, error) {
 	var err error
-	for param := range util.EachParamInFunc(astType) {
+	for param := range util.EachFieldInFieldList(astType.Params) {
 		param.Type, err = r.ResolveType(param.Type)
 		if err != nil {
 			return nil, err
 		}
 	}
-	for result := range util.EachResultInFunc(astType) {
+	for result := range util.EachFieldInFieldList(astType.Results) {
 		result.Type, err = r.ResolveType(result.Type)
 		if err != nil {
 			return nil, err
@@ -137,7 +137,7 @@ func (r *Resolver) resolveFuncType(astType *ast.FuncType) (ast.Expr, error) {
 
 func (r *Resolver) resolveStructType(astType *ast.StructType) (ast.Expr, error) {
 	var err error
-	for field := range util.EachFieldInStruct(astType) {
+	for field := range util.EachFieldInFieldList(astType.Fields) {
 		field.Type, err = r.ResolveType(field.Type)
 		if err != nil {
 			return nil, err
@@ -148,7 +148,7 @@ func (r *Resolver) resolveStructType(astType *ast.StructType) (ast.Expr, error) 
 
 func (r *Resolver) resolveInterfaceType(astType *ast.InterfaceType) (ast.Expr, error) {
 	var err error
-	for field := range util.EachFieldInInterface(astType) {
+	for field := range util.EachFieldInFieldList(astType.Methods) {
 		field.Type, err = r.ResolveType(field.Type)
 		if err != nil {
 			return nil, err

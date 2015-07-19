@@ -123,8 +123,8 @@ func (g *stubGenerator) ProcessInterface(discovery resolution.TypeDiscovery) err
 func (g *stubGenerator) getNormalizedParams(funcType *ast.FuncType) []*ast.Field {
 	normalizedParams := []*ast.Field{}
 	paramIndex := 1
-	for param := range util.EachParamInFunc(funcType) {
-		count := util.FieldReuseCount(param)
+	for param := range util.EachFieldInFieldList(funcType.Params) {
+		count := util.FieldTypeReuseCount(param)
 		for i := 0; i < count; i++ {
 			fieldName := fmt.Sprintf("arg%d", paramIndex)
 			fieldType, _ := g.resolver.ResolveType(param.Type)
@@ -139,8 +139,8 @@ func (g *stubGenerator) getNormalizedParams(funcType *ast.FuncType) []*ast.Field
 func (g *stubGenerator) getNormalizedResults(funcType *ast.FuncType) []*ast.Field {
 	normalizedResults := []*ast.Field{}
 	resultIndex := 1
-	for result := range util.EachResultInFunc(funcType) {
-		count := util.FieldReuseCount(result)
+	for result := range util.EachFieldInFieldList(funcType.Results) {
+		count := util.FieldTypeReuseCount(result)
 		for i := 0; i < count; i++ {
 			fieldName := fmt.Sprintf("result%d", resultIndex)
 			fieldType, _ := g.resolver.ResolveType(result.Type)

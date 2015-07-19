@@ -11,7 +11,7 @@ func CreateField(name string, fieldType ast.Expr) *ast.Field {
 	}
 }
 
-func GetFieldsAsAnonymous(fields []*ast.Field) []*ast.Field {
+func FieldsAsAnonymous(fields []*ast.Field) []*ast.Field {
 	result := make([]*ast.Field, len(fields))
 	for i, field := range fields {
 		result[i] = &ast.Field{
@@ -37,13 +37,6 @@ func FieldsWithoutEllipsis(fields []*ast.Field) []*ast.Field {
 	return result
 }
 
-func FieldReuseCount(field *ast.Field) int {
-	if len(field.Names) == 0 {
-		return 1
-	}
-	return len(field.Names)
-}
-
 func CreateFuncType() *ast.FuncType {
 	return &ast.FuncType{
 		Params: &ast.FieldList{
@@ -53,46 +46,6 @@ func CreateFuncType() *ast.FuncType {
 			List: []*ast.Field{},
 		},
 	}
-}
-
-func FuncTypeParamCount(funcType *ast.FuncType) int {
-	if funcType.Params == nil {
-		return 0
-	}
-	return len(funcType.Params.List)
-}
-
-func EachParamInFunc(funcType *ast.FuncType) <-chan *ast.Field {
-	result := make(chan *ast.Field)
-	go func() {
-		if funcType.Params != nil {
-			for _, param := range funcType.Params.List {
-				result <- param
-			}
-		}
-		close(result)
-	}()
-	return result
-}
-
-func FuncTypeResultCount(funcType *ast.FuncType) int {
-	if funcType.Results == nil {
-		return 0
-	}
-	return len(funcType.Results.List)
-}
-
-func EachResultInFunc(funcType *ast.FuncType) <-chan *ast.Field {
-	result := make(chan *ast.Field)
-	go func() {
-		if funcType.Results != nil {
-			for _, param := range funcType.Results.List {
-				result <- param
-			}
-		}
-		close(result)
-	}()
-	return result
 }
 
 func EachDeclarationInFile(file *ast.File) <-chan ast.Decl {
@@ -193,32 +146,6 @@ func EachSubInterfaceInInterfaceType(iFaceType *ast.InterfaceType) <-chan *ast.F
 				case *ast.Ident, *ast.SelectorExpr:
 					result <- method
 				}
-			}
-		}
-		close(result)
-	}()
-	return result
-}
-
-func EachFieldInStruct(astType *ast.StructType) <-chan *ast.Field {
-	result := make(chan *ast.Field)
-	go func() {
-		if astType.Fields != nil {
-			for _, field := range astType.Fields.List {
-				result <- field
-			}
-		}
-		close(result)
-	}()
-	return result
-}
-
-func EachFieldInInterface(astType *ast.InterfaceType) <-chan *ast.Field {
-	result := make(chan *ast.Field)
-	go func() {
-		if astType.Methods != nil {
-			for _, field := range astType.Methods.List {
-				result <- field
 			}
 		}
 		close(result)

@@ -78,7 +78,7 @@ func (b *StubMethodBuilder) Build() *ast.FuncDecl {
 			List: b.params,
 		},
 		Results: &ast.FieldList{
-			List: util.GetFieldsAsAnonymous(b.results),
+			List: util.FieldsAsAnonymous(b.results),
 		},
 	})
 	b.methodBuilder.AddStatement(mutexLockBuilder.Build())

@@ -60,7 +60,7 @@ func (b *ArgsMethodBuilder) Build() *ast.FuncDecl {
 			},
 		},
 		Results: &ast.FieldList{
-			List: util.FieldsWithoutEllipsis(util.GetFieldsAsAnonymous(b.params)),
+			List: util.FieldsWithoutEllipsis(util.FieldsAsAnonymous(b.params)),
 		},
 	})
 	b.methodBuilder.AddStatement(mutexLockBuilder.Build())
