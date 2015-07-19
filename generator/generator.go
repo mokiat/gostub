@@ -75,7 +75,8 @@ type stubGenerator struct {
 }
 
 func (g *stubGenerator) ProcessInterface(discovery resolution.TypeDiscovery) error {
-	g.resolver.SetContext(discovery.File, discovery.Location)
+	context := resolution.NewASTFileLocatorContext(discovery.File, discovery.Location)
+	g.resolver.SetLocatorContext(context)
 	iFaceType, isIFace := discovery.Spec.Type.(*ast.InterfaceType)
 	if !isIFace {
 		return errors.New(fmt.Sprintf("Type '%s' in '%s' is not interface!", discovery.Spec.Name.String(), discovery.Location))
@@ -92,7 +93,6 @@ func (g *stubGenerator) ProcessInterface(discovery resolution.TypeDiscovery) err
 			return err
 		}
 	}
-	context := resolution.NewASTFileLocatorContext(discovery.File, discovery.Location)
 	for subIFaceType := range util.EachSubInterfaceInInterfaceType(iFaceType) {
 		switch t := subIFaceType.Type.(type) {
 		case *ast.Ident:

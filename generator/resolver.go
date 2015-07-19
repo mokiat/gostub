@@ -26,8 +26,8 @@ type Resolver struct {
 	context *resolution.LocatorContext
 }
 
-func (r *Resolver) SetContext(astFile *ast.File, fileLocation string) {
-	r.context = resolution.NewASTFileLocatorContext(astFile, fileLocation)
+func (r *Resolver) SetLocatorContext(context *resolution.LocatorContext) {
+	r.context = context
 }
 
 func (r *Resolver) ResolveType(astType ast.Expr) (ast.Expr, error) {
