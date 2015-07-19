@@ -48,6 +48,8 @@ func (r *Resolver) ResolveType(astType ast.Expr) (ast.Expr, error) {
 		return r.resolveFuncType(t)
 	case *ast.StructType:
 		return r.resolveStructType(t)
+	case *ast.InterfaceType:
+		return r.resolveInterfaceType(t)
 	}
 	return astType, nil
 }
@@ -134,6 +136,17 @@ func (r *Resolver) resolveFuncType(astType *ast.FuncType) (ast.Expr, error) {
 func (r *Resolver) resolveStructType(astType *ast.StructType) (ast.Expr, error) {
 	var err error
 	for field := range util.EachFieldInStruct(astType) {
+		field.Type, err = r.ResolveType(field.Type)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return astType, nil
+}
+
+func (r *Resolver) resolveInterfaceType(astType *ast.InterfaceType) (ast.Expr, error) {
+	var err error
+	for field := range util.EachFieldInInterface(astType) {
 		field.Type, err = r.ResolveType(field.Type)
 		if err != nil {
 			return nil, err

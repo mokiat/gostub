@@ -196,3 +196,16 @@ func EachFieldInStruct(astType *ast.StructType) <-chan *ast.Field {
 	}()
 	return result
 }
+
+func EachFieldInInterface(astType *ast.InterfaceType) <-chan *ast.Field {
+	result := make(chan *ast.Field)
+	go func() {
+		if astType.Methods != nil {
+			for _, field := range astType.Methods.List {
+				result <- field
+			}
+		}
+		close(result)
+	}()
+	return result
+}
