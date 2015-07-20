@@ -80,49 +80,62 @@ func (g *stubGenerator) ProcessInterface(discovery resolution.TypeDiscovery) err
 	if !isIFace {
 		return errors.New(fmt.Sprintf("Type '%s' in '%s' is not interface!", discovery.Spec.Name.String(), discovery.Location))
 	}
-	for method := range util.EachMethodInInterfaceType(iFaceType) {
-		funcType := method.Type.(*ast.FuncType)
-		normalizedParams, err := g.getNormalizedParams(context, funcType)
-		if err != nil {
-			return err
-		}
-		normalizedResults, err := g.getNormalizedResults(context, funcType)
-		if err != nil {
-			return err
-		}
-		source := &MethodConfig{
-			MethodName:    method.Names[0].String(),
-			MethodParams:  normalizedParams,
-			MethodResults: normalizedResults,
-		}
-		err = g.model.AddMethod(source)
-		if err != nil {
-			return err
-		}
-	}
-	for subIFaceType := range util.EachSubInterfaceInInterfaceType(iFaceType) {
-		switch t := subIFaceType.Type.(type) {
+	for field := range util.EachFieldInFieldList(iFaceType.Methods) {
+		switch t := field.Type.(type) {
+		case *ast.FuncType:
+			g.processMethod(context, field.Names[0].String(), t)
 		case *ast.Ident:
-			discovery, err := g.locator.FindIdentType(context, t)
-			if err != nil {
-				return err
-			}
-			err = g.ProcessInterface(discovery)
-			if err != nil {
-				return err
-			}
+			g.processSubInterfaceIdent(context, t)
 		case *ast.SelectorExpr:
-			discovery, err := g.locator.FindSelectorType(context, t)
-			if err != nil {
-				return err
-			}
-			err = g.ProcessInterface(discovery)
-			if err != nil {
-				return err
-			}
+			g.processSubInterfaceSelector(context, t)
 		default:
 			return errors.New("Unknown statement in interface declaration.")
 		}
+	}
+	return nil
+}
+
+func (g *stubGenerator) processMethod(context *resolution.LocatorContext, name string, funcType *ast.FuncType) error {
+	normalizedParams, err := g.getNormalizedParams(context, funcType)
+	if err != nil {
+		return err
+	}
+	normalizedResults, err := g.getNormalizedResults(context, funcType)
+	if err != nil {
+		return err
+	}
+	source := &MethodConfig{
+		MethodName:    name,
+		MethodParams:  normalizedParams,
+		MethodResults: normalizedResults,
+	}
+	err = g.model.AddMethod(source)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (g *stubGenerator) processSubInterfaceIdent(context *resolution.LocatorContext, ident *ast.Ident) error {
+	discovery, err := g.locator.FindIdentType(context, ident)
+	if err != nil {
+		return err
+	}
+	err = g.ProcessInterface(discovery)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (g *stubGenerator) processSubInterfaceSelector(context *resolution.LocatorContext, selector *ast.SelectorExpr) error {
+	discovery, err := g.locator.FindSelectorType(context, selector)
+	if err != nil {
+		return err
+	}
+	err = g.ProcessInterface(discovery)
+	if err != nil {
+		return err
 	}
 	return nil
 }

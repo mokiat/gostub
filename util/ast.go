@@ -121,34 +121,3 @@ func EachInterfaceDeclarationInFile(file *ast.File) <-chan *ast.TypeSpec {
 	}()
 	return result
 }
-
-func EachMethodInInterfaceType(iFaceType *ast.InterfaceType) <-chan *ast.Field {
-	result := make(chan *ast.Field)
-	go func() {
-		if iFaceType.Methods != nil {
-			for _, method := range iFaceType.Methods.List {
-				if _, ok := method.Type.(*ast.FuncType); ok {
-					result <- method
-				}
-			}
-		}
-		close(result)
-	}()
-	return result
-}
-
-func EachSubInterfaceInInterfaceType(iFaceType *ast.InterfaceType) <-chan *ast.Field {
-	result := make(chan *ast.Field)
-	go func() {
-		if iFaceType.Methods != nil {
-			for _, method := range iFaceType.Methods.List {
-				switch method.Type.(type) {
-				case *ast.Ident, *ast.SelectorExpr:
-					result <- method
-				}
-			}
-		}
-		close(result)
-	}()
-	return result
-}
