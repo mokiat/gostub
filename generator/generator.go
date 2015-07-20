@@ -83,12 +83,20 @@ func (g *stubGenerator) ProcessInterface(discovery resolution.TypeDiscovery) err
 	}
 	for method := range util.EachMethodInInterfaceType(iFaceType) {
 		funcType := method.Type.(*ast.FuncType)
+		normalizedParams, err := g.getNormalizedParams(funcType)
+		if err != nil {
+			return err
+		}
+		normalizedResults, err := g.getNormalizedResults(funcType)
+		if err != nil {
+			return err
+		}
 		source := &MethodConfig{
 			MethodName:    method.Names[0].String(),
-			MethodParams:  g.getNormalizedParams(funcType),
-			MethodResults: g.getNormalizedResults(funcType),
+			MethodParams:  normalizedParams,
+			MethodResults: normalizedResults,
 		}
-		err := g.model.AddMethod(source)
+		err = g.model.AddMethod(source)
 		if err != nil {
 			return err
 		}
@@ -114,40 +122,46 @@ func (g *stubGenerator) ProcessInterface(discovery resolution.TypeDiscovery) err
 				return err
 			}
 		default:
-			panic("Unknown statement in interface declaration.")
+			return errors.New("Unknown statement in interface declaration.")
 		}
 	}
 	return nil
 }
 
-func (g *stubGenerator) getNormalizedParams(funcType *ast.FuncType) []*ast.Field {
+func (g *stubGenerator) getNormalizedParams(funcType *ast.FuncType) ([]*ast.Field, error) {
 	normalizedParams := []*ast.Field{}
 	paramIndex := 1
 	for param := range util.EachFieldInFieldList(funcType.Params) {
 		count := util.FieldTypeReuseCount(param)
 		for i := 0; i < count; i++ {
 			fieldName := fmt.Sprintf("arg%d", paramIndex)
-			fieldType, _ := g.resolver.ResolveType(param.Type)
+			fieldType, err := g.resolver.ResolveType(param.Type)
+			if err != nil {
+				return nil, err
+			}
 			normalizedParam := util.CreateField(fieldName, fieldType)
 			normalizedParams = append(normalizedParams, normalizedParam)
 			paramIndex++
 		}
 	}
-	return normalizedParams
+	return normalizedParams, nil
 }
 
-func (g *stubGenerator) getNormalizedResults(funcType *ast.FuncType) []*ast.Field {
+func (g *stubGenerator) getNormalizedResults(funcType *ast.FuncType) ([]*ast.Field, error) {
 	normalizedResults := []*ast.Field{}
 	resultIndex := 1
 	for result := range util.EachFieldInFieldList(funcType.Results) {
 		count := util.FieldTypeReuseCount(result)
 		for i := 0; i < count; i++ {
 			fieldName := fmt.Sprintf("result%d", resultIndex)
-			fieldType, _ := g.resolver.ResolveType(result.Type)
+			fieldType, err := g.resolver.ResolveType(result.Type)
+			if err != nil {
+				return nil, err
+			}
 			normalizedResult := util.CreateField(fieldName, fieldType)
 			normalizedResults = append(normalizedResults, normalizedResult)
 			resultIndex++
 		}
 	}
-	return normalizedResults
+	return normalizedResults, nil
 }
