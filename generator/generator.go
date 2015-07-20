@@ -76,18 +76,17 @@ type stubGenerator struct {
 
 func (g *stubGenerator) ProcessInterface(discovery resolution.TypeDiscovery) error {
 	context := resolution.NewASTFileLocatorContext(discovery.File, discovery.Location)
-	g.resolver.SetLocatorContext(context)
 	iFaceType, isIFace := discovery.Spec.Type.(*ast.InterfaceType)
 	if !isIFace {
 		return errors.New(fmt.Sprintf("Type '%s' in '%s' is not interface!", discovery.Spec.Name.String(), discovery.Location))
 	}
 	for method := range util.EachMethodInInterfaceType(iFaceType) {
 		funcType := method.Type.(*ast.FuncType)
-		normalizedParams, err := g.getNormalizedParams(funcType)
+		normalizedParams, err := g.getNormalizedParams(context, funcType)
 		if err != nil {
 			return err
 		}
-		normalizedResults, err := g.getNormalizedResults(funcType)
+		normalizedResults, err := g.getNormalizedResults(context, funcType)
 		if err != nil {
 			return err
 		}
@@ -128,14 +127,14 @@ func (g *stubGenerator) ProcessInterface(discovery resolution.TypeDiscovery) err
 	return nil
 }
 
-func (g *stubGenerator) getNormalizedParams(funcType *ast.FuncType) ([]*ast.Field, error) {
+func (g *stubGenerator) getNormalizedParams(context *resolution.LocatorContext, funcType *ast.FuncType) ([]*ast.Field, error) {
 	normalizedParams := []*ast.Field{}
 	paramIndex := 1
 	for param := range util.EachFieldInFieldList(funcType.Params) {
 		count := util.FieldTypeReuseCount(param)
 		for i := 0; i < count; i++ {
 			fieldName := fmt.Sprintf("arg%d", paramIndex)
-			fieldType, err := g.resolver.ResolveType(param.Type)
+			fieldType, err := g.resolver.ResolveType(context, param.Type)
 			if err != nil {
 				return nil, err
 			}
@@ -147,14 +146,14 @@ func (g *stubGenerator) getNormalizedParams(funcType *ast.FuncType) ([]*ast.Fiel
 	return normalizedParams, nil
 }
 
-func (g *stubGenerator) getNormalizedResults(funcType *ast.FuncType) ([]*ast.Field, error) {
+func (g *stubGenerator) getNormalizedResults(context *resolution.LocatorContext, funcType *ast.FuncType) ([]*ast.Field, error) {
 	normalizedResults := []*ast.Field{}
 	resultIndex := 1
 	for result := range util.EachFieldInFieldList(funcType.Results) {
 		count := util.FieldTypeReuseCount(result)
 		for i := 0; i < count; i++ {
 			fieldName := fmt.Sprintf("result%d", resultIndex)
-			fieldType, err := g.resolver.ResolveType(result.Type)
+			fieldType, err := g.resolver.ResolveType(context, result.Type)
 			if err != nil {
 				return nil, err
 			}
