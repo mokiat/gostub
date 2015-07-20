@@ -2,6 +2,7 @@ package util_test
 
 import (
 	"go/ast"
+	"go/token"
 
 	. "github.com/momchil-atanasov/gostub/util"
 
@@ -97,6 +98,171 @@ var _ = Describe("AST Walk", func() {
 				fieldChan := EachFieldInFieldList(fieldList)
 				Eventually(fieldChan).Should(BeClosed())
 			})
+		})
+	})
+
+	Describe("EachDeclarationInFile", func() {
+		var file *ast.File
+		var firstDeclaration ast.Decl
+		var secondDeclaration ast.Decl
+		var thirdDeclaration ast.Decl
+
+		BeforeEach(func() {
+			firstDeclaration = &ast.BadDecl{}
+			secondDeclaration = &ast.FuncDecl{}
+			thirdDeclaration = &ast.GenDecl{}
+			file = &ast.File{
+				Decls: []ast.Decl{
+					firstDeclaration,
+					secondDeclaration,
+					thirdDeclaration,
+				},
+			}
+		})
+
+		It("returns all declarations", func() {
+			decChan := EachDeclarationInFile(file)
+			Ω(<-decChan).Should(Equal(firstDeclaration))
+			Ω(<-decChan).Should(Equal(secondDeclaration))
+			Ω(<-decChan).Should(Equal(thirdDeclaration))
+			Eventually(decChan).Should(BeClosed())
+		})
+	})
+
+	Describe("EachGenericDeclarationInFile", func() {
+		var file *ast.File
+		var firstDeclaration ast.Decl
+		var secondDeclaration ast.Decl
+		var thirdDeclaration ast.Decl
+		BeforeEach(func() {
+			firstDeclaration = &ast.GenDecl{
+				Tok: token.IMPORT,
+			}
+			secondDeclaration = &ast.FuncDecl{}
+			thirdDeclaration = &ast.GenDecl{
+				Tok: token.CONST,
+			}
+			file = &ast.File{
+				Decls: []ast.Decl{
+					firstDeclaration,
+					secondDeclaration,
+					thirdDeclaration,
+				},
+			}
+		})
+
+		It("returns only generic declarations", func() {
+			decChan := EachGenericDeclarationInFile(file)
+			Ω(<-decChan).Should(Equal(firstDeclaration))
+			Ω(<-decChan).Should(Equal(thirdDeclaration))
+			Eventually(decChan).Should(BeClosed())
+		})
+	})
+
+	Describe("EachSpecificationInGenericDeclaration", func() {
+		var decl *ast.GenDecl
+		var firstSpec ast.Spec
+		var secondSpec ast.Spec
+
+		BeforeEach(func() {
+			firstSpec = &ast.ValueSpec{
+				Type: ast.NewIdent("first"),
+			}
+			secondSpec = &ast.ValueSpec{
+				Type: ast.NewIdent("second"),
+			}
+			decl = &ast.GenDecl{
+				Specs: []ast.Spec{
+					firstSpec,
+					secondSpec,
+				},
+			}
+		})
+
+		It("returns all specifications", func() {
+			specChan := EachSpecificationInGenericDeclaration(decl)
+			Ω(<-specChan).Should(Equal(firstSpec))
+			Ω(<-specChan).Should(Equal(secondSpec))
+			Eventually(specChan).Should(BeClosed())
+		})
+	})
+
+	Describe("EachTypeSpecificationInGenericDeclaration", func() {
+		var decl *ast.GenDecl
+		var firstSpec ast.Spec
+		var secondSpec ast.Spec
+		var thirdSpec ast.Spec
+
+		BeforeEach(func() {
+			firstSpec = &ast.TypeSpec{
+				Name: ast.NewIdent("first"),
+			}
+			secondSpec = &ast.ValueSpec{
+				Type: ast.NewIdent("second"),
+			}
+			thirdSpec = &ast.TypeSpec{
+				Name: ast.NewIdent("third"),
+			}
+			decl = &ast.GenDecl{
+				Specs: []ast.Spec{
+					firstSpec,
+					secondSpec,
+					thirdSpec,
+				},
+			}
+		})
+
+		It("returns all specifications", func() {
+			specChan := EachTypeSpecificationInGenericDeclaration(decl)
+			Ω(<-specChan).Should(Equal(firstSpec))
+			Ω(<-specChan).Should(Equal(thirdSpec))
+			Eventually(specChan).Should(BeClosed())
+		})
+	})
+
+	Describe("EachTypeSpecificationInFile", func() {
+		var file *ast.File
+		var firstSpec ast.Spec
+		var thirdSpec ast.Spec
+
+		BeforeEach(func() {
+			firstSpec = &ast.TypeSpec{
+				Name: ast.NewIdent("first"),
+				Type: &ast.StructType{},
+			}
+			thirdSpec = &ast.TypeSpec{
+				Name: ast.NewIdent("third"),
+				Type: &ast.InterfaceType{},
+			}
+			firstDeclaration := &ast.GenDecl{
+				Specs: []ast.Spec{
+					firstSpec,
+				},
+			}
+			secondDeclaration := &ast.GenDecl{
+				Specs: []ast.Spec{
+					&ast.ImportSpec{},
+				},
+			}
+			thirdDeclaration := &ast.GenDecl{
+				Specs: []ast.Spec{
+					thirdSpec,
+				},
+			}
+			file = &ast.File{
+				Decls: []ast.Decl{
+					firstDeclaration,
+					secondDeclaration,
+					thirdDeclaration,
+				},
+			}
+		})
+
+		It("returns all type specifications", func() {
+			specChan := EachTypeSpecificationInFile(file)
+			Ω(<-specChan).Should(Equal(firstSpec))
+			Ω(<-specChan).Should(Equal(thirdSpec))
+			Eventually(specChan).Should(BeClosed())
 		})
 	})
 })
