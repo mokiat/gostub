@@ -3,15 +3,17 @@ package generator
 import "go/ast"
 
 func NewMethodBuilder() *MethodBuilder {
-	return &MethodBuilder{}
+	return &MethodBuilder{
+		statementBuilders: make([]StatementBuilder, 0),
+	}
 }
 
 type MethodBuilder struct {
-	name         string
-	funcType     *ast.FuncType
-	receiverName string
-	receiverType string
-	statements   []ast.Stmt
+	name              string
+	funcType          *ast.FuncType
+	receiverName      string
+	receiverType      string
+	statementBuilders []StatementBuilder
 }
 
 func (m *MethodBuilder) SetName(name string) {
@@ -27,16 +29,14 @@ func (m *MethodBuilder) SetType(funcType *ast.FuncType) {
 	m.funcType = funcType
 }
 
-func (m *MethodBuilder) AddStatement(statement ast.Stmt) {
-	m.statements = append(m.statements, statement)
+func (m *MethodBuilder) AddStatementBuilder(builder StatementBuilder) {
+	m.statementBuilders = append(m.statementBuilders, builder)
 }
 
-func (m *MethodBuilder) Build() *ast.FuncDecl {
-	body := &ast.BlockStmt{
-		List: []ast.Stmt{},
-	}
-	for _, statement := range m.statements {
-		body.List = append(body.List, statement)
+func (m *MethodBuilder) Build() ast.Decl {
+	statements := make([]ast.Stmt, len(m.statementBuilders))
+	for i, builder := range m.statementBuilders {
+		statements[i] = builder.Build()
 	}
 	return &ast.FuncDecl{
 		Recv: &ast.FieldList{
@@ -53,6 +53,8 @@ func (m *MethodBuilder) Build() *ast.FuncDecl {
 		},
 		Name: ast.NewIdent(m.name),
 		Type: m.funcType,
-		Body: body,
+		Body: &ast.BlockStmt{
+			List: statements,
+		},
 	}
 }

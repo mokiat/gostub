@@ -7,24 +7,28 @@ import (
 
 func NewStructBuilder() *StructBuilder {
 	return &StructBuilder{
-		fields: make([]*ast.Field, 0),
+		fieldBuilders: make([]FieldBuilder, 0),
 	}
 }
 
 type StructBuilder struct {
-	name   string
-	fields []*ast.Field
+	name          string
+	fieldBuilders []FieldBuilder
 }
 
 func (m *StructBuilder) SetName(name string) {
 	m.name = name
 }
 
-func (m *StructBuilder) AddField(field *ast.Field) {
-	m.fields = append(m.fields, field)
+func (m *StructBuilder) AddFieldBuilder(field FieldBuilder) {
+	m.fieldBuilders = append(m.fieldBuilders, field)
 }
 
-func (m *StructBuilder) Build() *ast.GenDecl {
+func (m *StructBuilder) Build() ast.Decl {
+	fields := make([]*ast.Field, len(m.fieldBuilders))
+	for i, builder := range m.fieldBuilders {
+		fields[i] = builder.Build()
+	}
 	return &ast.GenDecl{
 		Tok: token.TYPE,
 		Specs: []ast.Spec{
@@ -32,7 +36,7 @@ func (m *StructBuilder) Build() *ast.GenDecl {
 				Name: ast.NewIdent(m.name),
 				Type: &ast.StructType{
 					Fields: &ast.FieldList{
-						List: m.fields,
+						List: fields,
 					},
 				},
 			},

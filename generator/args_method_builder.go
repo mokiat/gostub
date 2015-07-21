@@ -43,7 +43,7 @@ func (b *ArgsMethodBuilder) SetParams(params []*ast.Field) {
 	b.params = params
 }
 
-func (b *ArgsMethodBuilder) Build() *ast.FuncDecl {
+func (b *ArgsMethodBuilder) Build() ast.Decl {
 	mutexLockBuilder := NewMutexActionBuilder()
 	mutexLockBuilder.SetMutexFieldSelector(b.mutexFieldSelector)
 	mutexLockBuilder.SetAction("RLock")
@@ -63,8 +63,8 @@ func (b *ArgsMethodBuilder) Build() *ast.FuncDecl {
 			List: util.FieldsWithoutEllipsis(util.FieldsAsAnonymous(b.params)),
 		},
 	})
-	b.methodBuilder.AddStatement(mutexLockBuilder.Build())
-	b.methodBuilder.AddStatement(mutexUnlockBuilder.Build())
+	b.methodBuilder.AddStatementBuilder(mutexLockBuilder)
+	b.methodBuilder.AddStatementBuilder(mutexUnlockBuilder)
 
 	results := []ast.Expr{}
 	for _, param := range b.params {
@@ -76,8 +76,8 @@ func (b *ArgsMethodBuilder) Build() *ast.FuncDecl {
 			Sel: ast.NewIdent(param.Names[0].String()),
 		})
 	}
-	b.methodBuilder.AddStatement(&ast.ReturnStmt{
+	b.methodBuilder.AddStatementBuilder(StatementToBuilder(&ast.ReturnStmt{
 		Results: results,
-	})
+	}))
 	return b.methodBuilder.Build()
 }

@@ -63,7 +63,7 @@ func (b *StubMethodBuilder) SetResults(results []*ast.Field) {
 	b.results = results
 }
 
-func (b *StubMethodBuilder) Build() *ast.FuncDecl {
+func (b *StubMethodBuilder) Build() ast.Decl {
 	mutexLockBuilder := NewMutexActionBuilder()
 	mutexLockBuilder.SetMutexFieldSelector(b.mutexFieldSelector)
 	mutexLockBuilder.SetAction("Lock")
@@ -81,15 +81,15 @@ func (b *StubMethodBuilder) Build() *ast.FuncDecl {
 			List: util.FieldsAsAnonymous(b.results),
 		},
 	})
-	b.methodBuilder.AddStatement(mutexLockBuilder.Build())
-	b.methodBuilder.AddStatement(mutexUnlockBuilder.Build())
+	b.methodBuilder.AddStatementBuilder(mutexLockBuilder)
+	b.methodBuilder.AddStatementBuilder(mutexUnlockBuilder)
 
 	paramSelectors := []ast.Expr{}
 	for _, param := range b.params {
 		paramSelectors = append(paramSelectors, ast.NewIdent(param.Names[0].String()))
 	}
 
-	b.methodBuilder.AddStatement(&ast.AssignStmt{
+	b.methodBuilder.AddStatementBuilder(StatementToBuilder(&ast.AssignStmt{
 		Lhs: []ast.Expr{
 			b.argsFieldSelector,
 		},
@@ -110,7 +110,7 @@ func (b *StubMethodBuilder) Build() *ast.FuncDecl {
 				},
 			},
 		},
-	})
+	}))
 
 	hasEllipsis := false
 	if parCount := len(b.params); parCount > 0 {
@@ -119,7 +119,7 @@ func (b *StubMethodBuilder) Build() *ast.FuncDecl {
 		}
 	}
 
-	b.methodBuilder.AddStatement(&ast.IfStmt{
+	b.methodBuilder.AddStatementBuilder(StatementToBuilder(&ast.IfStmt{
 		Cond: &ast.BinaryExpr{
 			X:  b.stubFieldSelector,
 			Op: token.NEQ,
@@ -127,7 +127,7 @@ func (b *StubMethodBuilder) Build() *ast.FuncDecl {
 		},
 		Body: b.buildCallStubMethodCode(paramSelectors, hasEllipsis),
 		Else: b.buildReturnReturnsCode(),
-	})
+	}))
 
 	return b.methodBuilder.Build()
 }

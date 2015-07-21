@@ -8,20 +8,18 @@ import (
 
 func NewFileBuilder() *FileBuilder {
 	return &FileBuilder{
-		importToAlias:        make(map[string]string),
-		aliasToImport:        make(map[string]string),
-		generalDeclarations:  make([]*ast.GenDecl, 0),
-		functionDeclarations: make([]*ast.FuncDecl, 0),
+		importToAlias:              make(map[string]string),
+		aliasToImport:              make(map[string]string),
+		generalDeclarationBuilders: make([]DeclarationBuilder, 0),
 	}
 }
 
 type FileBuilder struct {
-	filePackageName      string
-	importToAlias        map[string]string
-	aliasToImport        map[string]string
-	aliasCounter         int
-	generalDeclarations  []*ast.GenDecl
-	functionDeclarations []*ast.FuncDecl
+	filePackageName            string
+	importToAlias              map[string]string
+	aliasToImport              map[string]string
+	aliasCounter               int
+	generalDeclarationBuilders []DeclarationBuilder
 }
 
 func (m *FileBuilder) SetPackage(name string) {
@@ -56,12 +54,8 @@ func (m *FileBuilder) allocateUniqueAlias() string {
 	return fmt.Sprintf("alias%d", m.aliasCounter)
 }
 
-func (m *FileBuilder) AddGeneralDeclaration(declaration *ast.GenDecl) {
-	m.generalDeclarations = append(m.generalDeclarations, declaration)
-}
-
-func (m *FileBuilder) AddFunctionDeclaration(declaration *ast.FuncDecl) {
-	m.functionDeclarations = append(m.functionDeclarations, declaration)
+func (m *FileBuilder) AddDeclarationBuilder(builder DeclarationBuilder) {
+	m.generalDeclarationBuilders = append(m.generalDeclarationBuilders, builder)
 }
 
 func (m *FileBuilder) Build() *ast.File {
@@ -87,12 +81,8 @@ func (m *FileBuilder) Build() *ast.File {
 		file.Decls = append(file.Decls, importDeclaration)
 	}
 
-	for _, generalDeclaration := range m.generalDeclarations {
-		file.Decls = append(file.Decls, generalDeclaration)
-	}
-
-	for _, functionDeclaration := range m.functionDeclarations {
-		file.Decls = append(file.Decls, functionDeclaration)
+	for _, builder := range m.generalDeclarationBuilders {
+		file.Decls = append(file.Decls, builder.Build())
 	}
 
 	return file

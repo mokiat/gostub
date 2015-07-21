@@ -30,7 +30,7 @@ func (b *CountMethodBuilder) SetArgsFieldSelector(selector *ast.SelectorExpr) {
 	b.argsFieldSelector = selector
 }
 
-func (b *CountMethodBuilder) Build() *ast.FuncDecl {
+func (b *CountMethodBuilder) Build() ast.Decl {
 	mutexLockBuilder := NewMutexActionBuilder()
 	mutexLockBuilder.SetMutexFieldSelector(b.mutexFieldSelector)
 	mutexLockBuilder.SetAction("RLock")
@@ -50,9 +50,9 @@ func (b *CountMethodBuilder) Build() *ast.FuncDecl {
 			},
 		},
 	})
-	b.methodBuilder.AddStatement(mutexLockBuilder.Build())
-	b.methodBuilder.AddStatement(mutexUnlockBuilder.Build())
-	b.methodBuilder.AddStatement(&ast.ReturnStmt{
+	b.methodBuilder.AddStatementBuilder(mutexLockBuilder)
+	b.methodBuilder.AddStatementBuilder(mutexUnlockBuilder)
+	b.methodBuilder.AddStatementBuilder(StatementToBuilder(&ast.ReturnStmt{
 		Results: []ast.Expr{
 			&ast.CallExpr{
 				Fun: ast.NewIdent("len"),
@@ -61,6 +61,6 @@ func (b *CountMethodBuilder) Build() *ast.FuncDecl {
 				},
 			},
 		},
-	})
+	}))
 	return b.methodBuilder.Build()
 }

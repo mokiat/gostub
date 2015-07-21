@@ -9,11 +9,12 @@ import (
 const receiverName string = "stub"
 
 func NewGeneratorModel(pkgName, stubName string) *GeneratorModel {
-	fileBuilder := NewFileBuilder()
-	fileBuilder.SetPackage(pkgName)
-
 	structBuilder := NewStructBuilder()
 	structBuilder.SetName(stubName)
+
+	fileBuilder := NewFileBuilder()
+	fileBuilder.SetPackage(pkgName)
+	fileBuilder.AddDeclarationBuilder(structBuilder)
 
 	return &GeneratorModel{
 		fileBuilder:   fileBuilder,
@@ -60,28 +61,28 @@ func (t *GeneratorModel) createMethodStubField(config *MethodConfig) {
 	builder.SetFieldName(config.StubFieldName())
 	builder.SetParams(config.MethodParams)
 	builder.SetResults(config.MethodResults)
-	t.structBuilder.AddField(builder.Build())
+	t.structBuilder.AddFieldBuilder(builder)
 }
 
 func (t *GeneratorModel) createMutexField(config *MethodConfig) {
 	builder := NewMethodMutexFieldBuilder()
 	builder.SetFieldName(config.MutexFieldName())
 	builder.SetMutexType(t.resolveMutexType())
-	t.structBuilder.AddField(builder.Build())
+	t.structBuilder.AddFieldBuilder(builder)
 }
 
 func (t *GeneratorModel) createArgsForCallField(config *MethodConfig) {
 	builder := NewMethodArgsFieldBuilder()
 	builder.SetFieldName(config.ArgsFieldName())
 	builder.SetParams(config.MethodParams)
-	t.structBuilder.AddField(builder.Build())
+	t.structBuilder.AddFieldBuilder(builder)
 }
 
 func (t *GeneratorModel) createReturnsField(config *MethodConfig) {
 	builder := NewReturnsFieldBuilder()
 	builder.SetFieldName(config.ReturnsFieldName())
 	builder.SetResults(config.MethodResults)
-	t.structBuilder.AddField(builder.Build())
+	t.structBuilder.AddFieldBuilder(builder)
 }
 
 func (t *GeneratorModel) createStubMethod(config *MethodConfig) {
@@ -93,7 +94,7 @@ func (t *GeneratorModel) createStubMethod(config *MethodConfig) {
 	builder.SetStubFieldSelector(config.StubFieldSelector())
 	builder.SetParams(config.MethodParams)
 	builder.SetResults(config.MethodResults)
-	t.fileBuilder.AddFunctionDeclaration(builder.Build())
+	t.fileBuilder.AddDeclarationBuilder(builder)
 }
 
 func (t *GeneratorModel) createCallCountMethod(config *MethodConfig) {
@@ -101,7 +102,7 @@ func (t *GeneratorModel) createCallCountMethod(config *MethodConfig) {
 	builder := NewCountMethodBuilder(methodBuilder)
 	builder.SetMutexFieldSelector(config.MutexFieldSelector())
 	builder.SetArgsFieldSelector(config.ArgsFieldSelector())
-	t.fileBuilder.AddFunctionDeclaration(builder.Build())
+	t.fileBuilder.AddDeclarationBuilder(builder)
 }
 
 func (t *GeneratorModel) createArgsForCallMethod(config *MethodConfig) {
@@ -110,7 +111,7 @@ func (t *GeneratorModel) createArgsForCallMethod(config *MethodConfig) {
 	builder.SetMutexFieldSelector(config.MutexFieldSelector())
 	builder.SetArgsFieldSelector(config.ArgsFieldSelector())
 	builder.SetParams(config.MethodParams)
-	t.fileBuilder.AddFunctionDeclaration(builder.Build())
+	t.fileBuilder.AddDeclarationBuilder(builder)
 }
 
 func (t *GeneratorModel) createReturnsMethod(config *MethodConfig) {
@@ -119,7 +120,7 @@ func (t *GeneratorModel) createReturnsMethod(config *MethodConfig) {
 	builder.SetMutexFieldSelector(config.MutexFieldSelector())
 	builder.SetReturnsFieldSelector(config.ReturnsFieldSelector())
 	builder.SetResults(config.MethodResults)
-	t.fileBuilder.AddFunctionDeclaration(builder.Build())
+	t.fileBuilder.AddDeclarationBuilder(builder)
 }
 
 func (t *GeneratorModel) createMethodBuilder(config *MethodConfig, name string) *MethodBuilder {
@@ -138,7 +139,6 @@ func (t *GeneratorModel) resolveMutexType() ast.Expr {
 }
 
 func (t *GeneratorModel) Save(filePath string) error {
-	t.fileBuilder.AddGeneralDeclaration(t.structBuilder.Build())
 	astFile := t.fileBuilder.Build()
 
 	sourceCode, err := util.CreateSourceCode(astFile)

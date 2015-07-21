@@ -42,7 +42,7 @@ func (b *ReturnsMethodBuilder) SetResults(results []*ast.Field) {
 	b.results = results
 }
 
-func (b *ReturnsMethodBuilder) Build() *ast.FuncDecl {
+func (b *ReturnsMethodBuilder) Build() ast.Decl {
 	mutexLockBuilder := NewMutexActionBuilder()
 	mutexLockBuilder.SetMutexFieldSelector(b.mutexFieldSelector)
 	mutexLockBuilder.SetAction("Lock")
@@ -57,14 +57,14 @@ func (b *ReturnsMethodBuilder) Build() *ast.FuncDecl {
 			List: b.results,
 		},
 	})
-	b.methodBuilder.AddStatement(mutexLockBuilder.Build())
-	b.methodBuilder.AddStatement(mutexUnlockBuilder.Build())
+	b.methodBuilder.AddStatementBuilder(mutexLockBuilder)
+	b.methodBuilder.AddStatementBuilder(mutexUnlockBuilder)
 
 	resultSelectors := []ast.Expr{}
 	for _, result := range b.results {
 		resultSelectors = append(resultSelectors, ast.NewIdent(result.Names[0].String()))
 	}
-	b.methodBuilder.AddStatement(&ast.AssignStmt{
+	b.methodBuilder.AddStatementBuilder(StatementToBuilder(&ast.AssignStmt{
 		Lhs: []ast.Expr{
 			b.returnsFieldSelector,
 		},
@@ -79,6 +79,6 @@ func (b *ReturnsMethodBuilder) Build() *ast.FuncDecl {
 				Elts: resultSelectors,
 			},
 		},
-	})
+	}))
 	return b.methodBuilder.Build()
 }
