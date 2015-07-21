@@ -6,6 +6,7 @@ import (
 	sync "sync"
 
 	alias1 "github.com/momchil-atanasov/gostub/acceptance"
+	alias3 "github.com/momchil-atanasov/gostub/acceptance/external"
 	alias2 "github.com/momchil-atanasov/gostub/acceptance/external/external_dup"
 )
 
@@ -18,13 +19,13 @@ type ExternalEmbeddedInterfaceSupportStub struct {
 	runReturns struct {
 		result1 error
 	}
-	MethodStub        func(arg1 int) (result1 int)
+	MethodStub        func(arg1 alias3.Runner) (result1 alias3.Runner)
 	methodMutex       sync.RWMutex
 	methodArgsForCall []struct {
-		arg1 int
+		arg1 alias3.Runner
 	}
 	methodReturns struct {
-		result1 int
+		result1 alias3.Runner
 	}
 }
 
@@ -59,11 +60,11 @@ func (stub *ExternalEmbeddedInterfaceSupportStub) RunReturns(result1 error) {
 		result1 error
 	}{result1}
 }
-func (stub *ExternalEmbeddedInterfaceSupportStub) Method(arg1 int) int {
+func (stub *ExternalEmbeddedInterfaceSupportStub) Method(arg1 alias3.Runner) alias3.Runner {
 	stub.methodMutex.Lock()
 	defer stub.methodMutex.Unlock()
 	stub.methodArgsForCall = append(stub.methodArgsForCall, struct {
-		arg1 int
+		arg1 alias3.Runner
 	}{arg1})
 	if stub.MethodStub != nil {
 		return stub.MethodStub(arg1)
@@ -76,15 +77,15 @@ func (stub *ExternalEmbeddedInterfaceSupportStub) MethodCallCount() int {
 	defer stub.methodMutex.RUnlock()
 	return len(stub.methodArgsForCall)
 }
-func (stub *ExternalEmbeddedInterfaceSupportStub) MethodArgsForCall(index int) int {
+func (stub *ExternalEmbeddedInterfaceSupportStub) MethodArgsForCall(index int) alias3.Runner {
 	stub.methodMutex.RLock()
 	defer stub.methodMutex.RUnlock()
 	return stub.methodArgsForCall[index].arg1
 }
-func (stub *ExternalEmbeddedInterfaceSupportStub) MethodReturns(result1 int) {
+func (stub *ExternalEmbeddedInterfaceSupportStub) MethodReturns(result1 alias3.Runner) {
 	stub.methodMutex.Lock()
 	defer stub.methodMutex.Unlock()
 	stub.methodReturns = struct {
-		result1 int
+		result1 alias3.Runner
 	}{result1}
 }
