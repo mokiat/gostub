@@ -4,6 +4,8 @@ package acceptance_stubs
 
 import (
 	sync "sync"
+
+	alias1 "github.com/momchil-atanasov/gostub/acceptance"
 )
 
 type NoParamsNoResultsStub struct {
@@ -12,6 +14,8 @@ type NoParamsNoResultsStub struct {
 	runArgsForCall []struct {
 	}
 }
+
+var _ alias1.NoParamsNoResults = new(NoParamsNoResultsStub)
 
 func (stub *NoParamsNoResultsStub) Run() {
 	stub.runMutex.Lock()

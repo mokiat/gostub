@@ -4,6 +4,8 @@ package acceptance_stubs
 
 import (
 	sync "sync"
+
+	alias1 "github.com/momchil-atanasov/gostub/acceptance"
 )
 
 type PrimitiveResultsStub struct {
@@ -17,6 +19,8 @@ type PrimitiveResultsStub struct {
 		result3 float32
 	}
 }
+
+var _ alias1.PrimitiveResults = new(PrimitiveResultsStub)
 
 func (stub *PrimitiveResultsStub) User() (string, int, float32) {
 	stub.userMutex.Lock()

@@ -28,6 +28,8 @@ type LocalEmbeddedInterfaceSupportStub struct {
 	}
 }
 
+var _ alias1.LocalEmbeddedInterfaceSupport = new(LocalEmbeddedInterfaceSupportStub)
+
 func (stub *LocalEmbeddedInterfaceSupportStub) Schedule(arg1 string, arg2 alias1.Customer) int {
 	stub.scheduleMutex.Lock()
 	defer stub.scheduleMutex.Unlock()

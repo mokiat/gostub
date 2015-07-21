@@ -4,6 +4,8 @@ package acceptance_stubs
 
 import (
 	sync "sync"
+
+	alias1 "github.com/momchil-atanasov/gostub/acceptance"
 )
 
 type ReusedResultsStub struct {
@@ -16,6 +18,8 @@ type ReusedResultsStub struct {
 		result2 string
 	}
 }
+
+var _ alias1.ReusedResults = new(ReusedResultsStub)
 
 func (stub *ReusedResultsStub) FullName() (string, string) {
 	stub.fullNameMutex.Lock()

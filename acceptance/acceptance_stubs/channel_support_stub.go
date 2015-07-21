@@ -5,25 +5,28 @@ package acceptance_stubs
 import (
 	sync "sync"
 
-	alias1 "github.com/momchil-atanasov/gostub/acceptance/external/external_dup"
+	alias1 "github.com/momchil-atanasov/gostub/acceptance"
+	alias2 "github.com/momchil-atanasov/gostub/acceptance/external/external_dup"
 )
 
 type ChannelSupportStub struct {
-	MethodStub        func(arg1 chan alias1.Address) (result1 chan alias1.Address)
+	MethodStub        func(arg1 chan alias2.Address) (result1 chan alias2.Address)
 	methodMutex       sync.RWMutex
 	methodArgsForCall []struct {
-		arg1 chan alias1.Address
+		arg1 chan alias2.Address
 	}
 	methodReturns struct {
-		result1 chan alias1.Address
+		result1 chan alias2.Address
 	}
 }
 
-func (stub *ChannelSupportStub) Method(arg1 chan alias1.Address) chan alias1.Address {
+var _ alias1.ChannelSupport = new(ChannelSupportStub)
+
+func (stub *ChannelSupportStub) Method(arg1 chan alias2.Address) chan alias2.Address {
 	stub.methodMutex.Lock()
 	defer stub.methodMutex.Unlock()
 	stub.methodArgsForCall = append(stub.methodArgsForCall, struct {
-		arg1 chan alias1.Address
+		arg1 chan alias2.Address
 	}{arg1})
 	if stub.MethodStub != nil {
 		return stub.MethodStub(arg1)
@@ -36,15 +39,15 @@ func (stub *ChannelSupportStub) MethodCallCount() int {
 	defer stub.methodMutex.RUnlock()
 	return len(stub.methodArgsForCall)
 }
-func (stub *ChannelSupportStub) MethodArgsForCall(index int) chan alias1.Address {
+func (stub *ChannelSupportStub) MethodArgsForCall(index int) chan alias2.Address {
 	stub.methodMutex.RLock()
 	defer stub.methodMutex.RUnlock()
 	return stub.methodArgsForCall[index].arg1
 }
-func (stub *ChannelSupportStub) MethodReturns(result1 chan alias1.Address) {
+func (stub *ChannelSupportStub) MethodReturns(result1 chan alias2.Address) {
 	stub.methodMutex.Lock()
 	defer stub.methodMutex.Unlock()
 	stub.methodReturns = struct {
-		result1 chan alias1.Address
+		result1 chan alias2.Address
 	}{result1}
 }

@@ -30,6 +30,13 @@ type GeneratorModel struct {
 	structName    string
 }
 
+func (t *GeneratorModel) AddStubAssignment(interfaceLocation, interfaceName string) {
+	assignBuilder := NewStubToInterfaceStatementBuilder()
+	assignBuilder.SetStubName(t.structName)
+	assignBuilder.SetInterfaceSelector(t.resolveInterfaceType(interfaceLocation, interfaceName))
+	t.fileBuilder.AddDeclarationBuilder(assignBuilder)
+}
+
 // AddImport assures that the specified package name in the specified
 // location will be added as an import.
 // This function returns the alias to be used in selector expressions.
@@ -131,7 +138,15 @@ func (t *GeneratorModel) createMethodBuilder(config *MethodConfig, name string) 
 	return builder
 }
 
-func (t *GeneratorModel) resolveMutexType() ast.Expr {
+func (t *GeneratorModel) resolveInterfaceType(location, name string) *ast.SelectorExpr {
+	alias := t.AddImport("", location)
+	return &ast.SelectorExpr{
+		X:   ast.NewIdent(alias),
+		Sel: ast.NewIdent(name),
+	}
+}
+
+func (t *GeneratorModel) resolveMutexType() *ast.SelectorExpr {
 	alias := t.AddImport("sync", "sync")
 	return &ast.SelectorExpr{
 		X:   ast.NewIdent(alias),

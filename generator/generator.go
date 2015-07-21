@@ -45,6 +45,8 @@ func Generate(config Config) error {
 	}
 
 	model := NewGeneratorModel(config.TargetPackageName, config.TargetStructName)
+	model.AddStubAssignment(config.SourcePackageLocation, config.SourceInterfaceName)
+
 	stubGen := newGenerator(model, locator)
 	err = stubGen.ProcessInterface(discovery)
 	if err != nil {

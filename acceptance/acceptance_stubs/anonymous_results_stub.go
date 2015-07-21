@@ -4,6 +4,8 @@ package acceptance_stubs
 
 import (
 	sync "sync"
+
+	alias1 "github.com/momchil-atanasov/gostub/acceptance"
 )
 
 type AnonymousResultsStub struct {
@@ -16,6 +18,8 @@ type AnonymousResultsStub struct {
 		result2 string
 	}
 }
+
+var _ alias1.AnonymousResults = new(AnonymousResultsStub)
 
 func (stub *AnonymousResultsStub) ActiveUser() (int, string) {
 	stub.activeUserMutex.Lock()

@@ -2,5 +2,11 @@
 
 package acceptance_stubs
 
+import (
+	alias1 "github.com/momchil-atanasov/gostub/acceptance"
+)
+
 type EmptyInterfaceStub struct {
 }
+
+var _ alias1.EmptyInterface = new(EmptyInterfaceStub)

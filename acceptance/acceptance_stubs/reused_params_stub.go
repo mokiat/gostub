@@ -4,6 +4,8 @@ package acceptance_stubs
 
 import (
 	sync "sync"
+
+	alias1 "github.com/momchil-atanasov/gostub/acceptance"
 )
 
 type ReusedParamsStub struct {
@@ -14,6 +16,8 @@ type ReusedParamsStub struct {
 		arg2 string
 	}
 }
+
+var _ alias1.ReusedParams = new(ReusedParamsStub)
 
 func (stub *ReusedParamsStub) Concat(arg1 string, arg2 string) {
 	stub.concatMutex.Lock()

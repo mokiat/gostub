@@ -4,6 +4,8 @@ package acceptance_stubs
 
 import (
 	sync "sync"
+
+	alias1 "github.com/momchil-atanasov/gostub/acceptance"
 )
 
 type PrimitiveParamsStub struct {
@@ -15,6 +17,8 @@ type PrimitiveParamsStub struct {
 		arg3 float32
 	}
 }
+
+var _ alias1.PrimitiveParams = new(PrimitiveParamsStub)
 
 func (stub *PrimitiveParamsStub) Save(arg1 int, arg2 string, arg3 float32) {
 	stub.saveMutex.Lock()

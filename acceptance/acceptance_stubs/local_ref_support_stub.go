@@ -19,6 +19,8 @@ type LocalRefSupportStub struct {
 	}
 }
 
+var _ alias1.LocalRefSupport = new(LocalRefSupportStub)
+
 func (stub *LocalRefSupportStub) Method(arg1 alias1.Customer) alias1.Customer {
 	stub.methodMutex.Lock()
 	defer stub.methodMutex.Unlock()
