@@ -11,14 +11,6 @@ func CreateField(name string, fieldType ast.Expr) *ast.Field {
 	}
 }
 
-func CreateGeneralDeclaration(spec ast.Spec) *ast.GenDecl {
-	return &ast.GenDecl{
-		Specs: []ast.Spec{
-			spec,
-		},
-	}
-}
-
 func FieldsAsAnonymous(fields []*ast.Field) []*ast.Field {
 	result := make([]*ast.Field, len(fields))
 	for i, field := range fields {
