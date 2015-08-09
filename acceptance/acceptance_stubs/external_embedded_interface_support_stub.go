@@ -11,6 +11,7 @@ import (
 )
 
 type ExternalEmbeddedInterfaceSupportStub struct {
+	StubGUID       int
 	RunStub        func(arg1 alias2.Address) (result1 error)
 	runMutex       sync.RWMutex
 	runArgsForCall []struct {

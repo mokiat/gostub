@@ -10,6 +10,7 @@ import (
 )
 
 type InterfaceSupportStub struct {
+	StubGUID   int
 	MethodStub func(arg1 interface {
 		alias2.Runner
 		ResolveAddress(alias2.Address) alias2.Address

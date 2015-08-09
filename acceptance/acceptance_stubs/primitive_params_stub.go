@@ -9,6 +9,7 @@ import (
 )
 
 type PrimitiveParamsStub struct {
+	StubGUID        int
 	SaveStub        func(arg1 int, arg2 string, arg3 float32)
 	saveMutex       sync.RWMutex
 	saveArgsForCall []struct {

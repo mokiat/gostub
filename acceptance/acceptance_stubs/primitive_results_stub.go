@@ -9,6 +9,7 @@ import (
 )
 
 type PrimitiveResultsStub struct {
+	StubGUID        int
 	UserStub        func() (result1 string, result2 int, result3 float32)
 	userMutex       sync.RWMutex
 	userArgsForCall []struct {

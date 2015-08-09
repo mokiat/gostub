@@ -10,6 +10,7 @@ import (
 )
 
 type EllipsisSupportStub struct {
+	StubGUID          int
 	MethodStub        func(arg1 string, arg2 int, arg3 ...alias2.Address)
 	methodMutex       sync.RWMutex
 	methodArgsForCall []struct {

@@ -9,6 +9,7 @@ import (
 )
 
 type AnonymousParamsStub struct {
+	StubGUID            int
 	RegisterStub        func(arg1 string, arg2 int)
 	registerMutex       sync.RWMutex
 	registerArgsForCall []struct {

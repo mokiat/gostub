@@ -9,6 +9,7 @@ import (
 )
 
 type NoParamsNoResultsStub struct {
+	StubGUID       int
 	RunStub        func()
 	runMutex       sync.RWMutex
 	runArgsForCall []struct {

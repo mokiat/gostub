@@ -9,6 +9,7 @@ import (
 )
 
 type ReusedParamsStub struct {
+	StubGUID          int
 	ConcatStub        func(arg1 string, arg2 string)
 	concatMutex       sync.RWMutex
 	concatArgsForCall []struct {

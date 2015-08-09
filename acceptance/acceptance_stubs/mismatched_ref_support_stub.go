@@ -10,6 +10,7 @@ import (
 )
 
 type MismatchedRefSupportStub struct {
+	StubGUID          int
 	MethodStub        func(arg1 alias2.Job) (result1 alias2.Job)
 	methodMutex       sync.RWMutex
 	methodArgsForCall []struct {

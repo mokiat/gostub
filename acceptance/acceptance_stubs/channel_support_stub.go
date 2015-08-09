@@ -10,6 +10,7 @@ import (
 )
 
 type ChannelSupportStub struct {
+	StubGUID          int
 	MethodStub        func(arg1 chan alias2.Address) (result1 chan alias2.Address)
 	methodMutex       sync.RWMutex
 	methodArgsForCall []struct {

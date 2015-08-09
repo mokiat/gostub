@@ -9,6 +9,7 @@ import (
 )
 
 type AnonymousResultsStub struct {
+	StubGUID              int
 	ActiveUserStub        func() (result1 int, result2 string)
 	activeUserMutex       sync.RWMutex
 	activeUserArgsForCall []struct {

@@ -9,6 +9,7 @@ import (
 )
 
 type ReusedResultsStub struct {
+	StubGUID            int
 	FullNameStub        func() (result1 string, result2 string)
 	fullNameMutex       sync.RWMutex
 	fullNameArgsForCall []struct {

@@ -10,6 +10,7 @@ import (
 )
 
 type EmbeddedRefSupportStub struct {
+	StubGUID          int
 	MethodStub        func(arg1 alias2.Resource) (result1 alias2.Resource)
 	methodMutex       sync.RWMutex
 	methodArgsForCall []struct {

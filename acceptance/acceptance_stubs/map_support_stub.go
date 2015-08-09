@@ -10,6 +10,7 @@ import (
 )
 
 type MapSupportStub struct {
+	StubGUID          int
 	MethodStub        func(arg1 map[alias2.Address]alias2.Address) (result1 map[alias2.Address]alias2.Address)
 	methodMutex       sync.RWMutex
 	methodArgsForCall []struct {

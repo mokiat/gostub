@@ -9,6 +9,7 @@ import (
 )
 
 type LocalRefSupportStub struct {
+	StubGUID          int
 	MethodStub        func(arg1 alias1.Customer) (result1 alias1.Customer)
 	methodMutex       sync.RWMutex
 	methodArgsForCall []struct {

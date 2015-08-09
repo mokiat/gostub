@@ -9,6 +9,7 @@ import (
 )
 
 type LocalEmbeddedInterfaceSupportStub struct {
+	StubGUID            int
 	ScheduleStub        func(arg1 string, arg2 alias1.Customer) (result1 int)
 	scheduleMutex       sync.RWMutex
 	scheduleArgsForCall []struct {

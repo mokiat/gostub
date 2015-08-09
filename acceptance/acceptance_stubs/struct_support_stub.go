@@ -10,6 +10,7 @@ import (
 )
 
 type StructSupportStub struct {
+	StubGUID          int
 	MethodStub        func(arg1 struct{ Input alias2.Address }) (result1 struct{ Output alias2.Address })
 	methodMutex       sync.RWMutex
 	methodArgsForCall []struct {

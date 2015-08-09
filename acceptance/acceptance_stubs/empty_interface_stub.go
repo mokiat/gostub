@@ -7,6 +7,7 @@ import (
 )
 
 type EmptyInterfaceStub struct {
+	StubGUID int
 }
 
 var _ alias1.EmptyInterface = new(EmptyInterfaceStub)
