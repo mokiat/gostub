@@ -58,7 +58,7 @@ func Generate(config Config) error {
 		return err
 	}
 
-	fmt.Printf("Stub '%s' successfully created in '%s'.\n", config.TargetStructName, config.TargetFilePath)
+	fmt.Printf("Stub '%s' successfully created in '%s'.\n", config.TargetStructName, config.TargetPackageName)
 	return nil
 }
 
