@@ -1,6 +1,6 @@
 # GoStub
 
-[![Build Status](https://travis-ci.org/momchil-atanasov/gostub.png)](https://travis-ci.org/momchil-atanasov/gostub)
+[![Build Status](https://travis-ci.org/momchil-atanasov/gostub.png)](https://travis-ci.org/momchil-atanasov/gostub) [![Go Report Card](https://goreportcard.com/badge/github.com/momchil-atanasov/gostub)](https://goreportcard.com/report/github.com/momchil-atanasov/gostub)
 
 GoStub is a stubbing tool for the Go programming language.
 
