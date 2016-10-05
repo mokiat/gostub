@@ -8,7 +8,7 @@ func NewCountMethodBuilder(methodBuilder *MethodBuilder) *CountMethodBuilder {
 	}
 }
 
-// CountMethodBuilder is reponsible for creating a method on the stub
+// CountMethodBuilder is responsible for creating a method on the stub
 // structure that allows you to check how many times the stubbed method
 // was called.
 //

@@ -12,7 +12,7 @@ func NewReturnsMethodBuilder(methodBuilder *MethodBuilder) *ReturnsMethodBuilder
 	}
 }
 
-// ReturnsMethodBuilder is reponsible for creating a method on the stub
+// ReturnsMethodBuilder is responsible for creating a method on the stub
 // structure that allows you to specify the results to be returned by
 // default when the stub method is called.
 //

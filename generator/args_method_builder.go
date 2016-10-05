@@ -13,7 +13,7 @@ func NewArgsMethodBuilder(methodBuilder *MethodBuilder) *ArgsMethodBuilder {
 	}
 }
 
-// ArgsMethodBuilder is reponsible for creating a method on the stub
+// ArgsMethodBuilder is responsible for creating a method on the stub
 // structure that allows you to check what arguments were used during
 // a specific call on the stub method.
 //

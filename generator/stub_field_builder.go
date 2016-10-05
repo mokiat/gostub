@@ -13,7 +13,7 @@ func NewMethodStubFieldBuilder() *MethodStubFieldBuilder {
 	}
 }
 
-// The MethodStubFieldBuilder is reponsible for creating the field
+// The MethodStubFieldBuilder is responsible for creating the field
 // which can be used by end-users to stub the behavior of a given
 // method.
 //

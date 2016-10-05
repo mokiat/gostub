@@ -10,7 +10,7 @@ func NewReturnsFieldBuilder() *ReturnsFieldBuilder {
 	return &ReturnsFieldBuilder{}
 }
 
-// The ReturnsFieldBuilder is reponsible for creating the field
+// The ReturnsFieldBuilder is responsible for creating the field
 // which is used by end-users to specify a stub method's default
 // return values.
 //

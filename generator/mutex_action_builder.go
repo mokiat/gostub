@@ -6,7 +6,7 @@ func NewMutexActionBuilder() *MutexActionBuilder {
 	return &MutexActionBuilder{}
 }
 
-// MutexActionBuilder is reponsible for creating a statement for
+// MutexActionBuilder is responsible for creating a statement for
 // a mutex of a given stub method.
 //
 // Example:

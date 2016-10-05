@@ -10,7 +10,7 @@ func NewMethodMutexFieldBuilder() *MethodMutexFieldBuilder {
 	return &MethodMutexFieldBuilder{}
 }
 
-// The MethodMutexFieldBuilder is reponsible for creating the field
+// The MethodMutexFieldBuilder is responsible for creating the field
 // which is internally used to synchronize access to data related
 // to a given method.
 //

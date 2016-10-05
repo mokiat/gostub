@@ -12,7 +12,7 @@ func NewMethodArgsFieldBuilder() *MethodArgsFieldBuilder {
 	}
 }
 
-// The MethodArgsFieldBuilder is reponsible for creating the field
+// The MethodArgsFieldBuilder is responsible for creating the field
 // which is internally used to track the arguments that the end-user
 // used to call a given method.
 //

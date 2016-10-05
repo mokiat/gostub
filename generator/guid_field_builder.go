@@ -10,7 +10,7 @@ func NewGUIDFieldBuilder() *GUIDFieldBuilder {
 	return &GUIDFieldBuilder{}
 }
 
-// The GUIDFieldBuilder is reponsible for creating a field
+// The GUIDFieldBuilder is responsible for creating a field
 // which can be used by end-users to force two stub instances
 // not to be equal.
 //

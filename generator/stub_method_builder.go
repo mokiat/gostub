@@ -15,7 +15,7 @@ func NewStubMethodBuilder(methodBuilder *MethodBuilder) *StubMethodBuilder {
 	}
 }
 
-// StubMethodBuilder is reponsible for creating a method that implements
+// StubMethodBuilder is responsible for creating a method that implements
 // the original method from the interface and does all the tracking
 // logic used by this framework.
 //
