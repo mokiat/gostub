@@ -44,7 +44,7 @@ func (b *CountMethodBuilder) Build() ast.Decl {
 		Params: &ast.FieldList{},
 		Results: &ast.FieldList{
 			List: []*ast.Field{
-				&ast.Field{
+				{
 					Type: ast.NewIdent("int"),
 				},
 			},

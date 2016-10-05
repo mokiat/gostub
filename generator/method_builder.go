@@ -41,7 +41,7 @@ func (m *MethodBuilder) Build() ast.Decl {
 	return &ast.FuncDecl{
 		Recv: &ast.FieldList{
 			List: []*ast.Field{
-				&ast.Field{
+				{
 					Names: []*ast.Ident{
 						ast.NewIdent(m.receiverName),
 					},

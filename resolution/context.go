@@ -10,7 +10,7 @@ import (
 func NewSingleLocationContext(location string) *LocatorContext {
 	return &LocatorContext{
 		imports: []importEntry{
-			importEntry{
+			{
 				Alias:    ".",
 				Location: location,
 			},
@@ -20,7 +20,7 @@ func NewSingleLocationContext(location string) *LocatorContext {
 
 func NewASTFileLocatorContext(astFile *ast.File, location string) *LocatorContext {
 	imports := []importEntry{
-		importEntry{
+		{
 			Alias:    ".",
 			Location: location,
 		},
