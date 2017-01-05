@@ -7,7 +7,8 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/codegangsta/cli"
+	cli "gopkg.in/urfave/cli.v1"
+
 	"github.com/mokiat/gostub/generator"
 	"github.com/mokiat/gostub/util"
 )
