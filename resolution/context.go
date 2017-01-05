@@ -4,7 +4,7 @@ import (
 	"go/ast"
 	"strings"
 
-	"github.com/momchil-atanasov/gostub/util"
+	"github.com/mokiat/gostub/util"
 )
 
 func NewSingleLocationContext(location string) *LocatorContext {

@@ -1,8 +1,8 @@
 package acceptance
 
 import (
-	other "github.com/momchil-atanasov/gostub/acceptance/external"
-	"github.com/momchil-atanasov/gostub/acceptance/external/external_dup"
+	other "github.com/mokiat/gostub/acceptance/external"
+	"github.com/mokiat/gostub/acceptance/external/external_dup"
 )
 
 //go:generate gostub ExternalEmbeddedInterfaceSupport

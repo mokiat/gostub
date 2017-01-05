@@ -3,7 +3,7 @@ package util_test
 import (
 	"os"
 
-	. "github.com/momchil-atanasov/gostub/util"
+	. "github.com/mokiat/gostub/util"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -23,10 +23,10 @@ var _ = Describe("Gopath", func() {
 	})
 
 	It("is possible to get directory from import", func() {
-		Ω(ImportToDir("github.com/momchil-atanasov/gostub/util")).Should(Equal(testDir))
+		Ω(ImportToDir("github.com/mokiat/gostub/util")).Should(Equal(testDir))
 	})
 
 	It("is possible to get import from directory", func() {
-		Ω(DirToImport(testDir)).Should(Equal("github.com/momchil-atanasov/gostub/util"))
+		Ω(DirToImport(testDir)).Should(Equal("github.com/mokiat/gostub/util"))
 	})
 })

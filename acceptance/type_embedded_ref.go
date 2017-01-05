@@ -1,6 +1,6 @@
 package acceptance
 
-import . "github.com/momchil-atanasov/gostub/acceptance/embedded"
+import . "github.com/mokiat/gostub/acceptance/embedded"
 
 //go:generate gostub EmbeddedRefSupport
 

@@ -4,7 +4,7 @@ import (
 	"go/ast"
 	"go/token"
 
-	"github.com/momchil-atanasov/gostub/util"
+	"github.com/mokiat/gostub/util"
 )
 
 func NewStubMethodBuilder(methodBuilder *MethodBuilder) *StubMethodBuilder {

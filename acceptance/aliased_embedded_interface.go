@@ -1,6 +1,6 @@
 package acceptance
 
-import alias "github.com/momchil-atanasov/gostub/acceptance/external/external_dup"
+import alias "github.com/mokiat/gostub/acceptance/external/external_dup"
 
 //go:generate gostub AliasedEmbeddedInterfaceSupport
 

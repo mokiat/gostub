@@ -1,6 +1,6 @@
 package acceptance
 
-import custom "github.com/momchil-atanasov/gostub/acceptance/aliased"
+import custom "github.com/mokiat/gostub/acceptance/aliased"
 
 //go:generate gostub AliasedRefSupport
 

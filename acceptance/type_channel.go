@@ -1,6 +1,6 @@
 package acceptance
 
-import "github.com/momchil-atanasov/gostub/acceptance/external/external_dup"
+import "github.com/mokiat/gostub/acceptance/external/external_dup"
 
 //go:generate gostub ChannelSupport
 

@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 
 	"github.com/codegangsta/cli"
-	"github.com/momchil-atanasov/gostub/generator"
-	"github.com/momchil-atanasov/gostub/util"
+	"github.com/mokiat/gostub/generator"
+	"github.com/mokiat/gostub/util"
 )
 
 func RunGoStub(c *cli.Context) {

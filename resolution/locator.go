@@ -6,7 +6,7 @@ import (
 	"go/parser"
 	"go/token"
 
-	"github.com/momchil-atanasov/gostub/util"
+	"github.com/mokiat/gostub/util"
 )
 
 func NewLocator() *Locator {

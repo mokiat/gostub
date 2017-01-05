@@ -6,9 +6,9 @@ import "go/build"
 // Go import path (usually relative to the $GOPATH/src directory)
 //
 // For example,
-//     /Users/user/workspace/Go/github.com/momchil-atanasov/gostub
+//     /Users/user/workspace/Go/github.com/mokiat/gostub
 // will be converted to
-//     github.com/momchil-atanasov/gostub
+//     github.com/mokiat/gostub
 // should GOPATH include the location
 //     /Users/user/workspace/Go
 func DirToImport(p string) (string, error) {
@@ -23,9 +23,9 @@ func DirToImport(p string) (string, error) {
 // the local machine.
 //
 // For example,
-//     github.com/momchil-atanasov/gostub
+//     github.com/mokiat/gostub
 // will be converted to
-//     /Users/user/workspace/Go/github.com/momchil-atanasov/gostub
+//     /Users/user/workspace/Go/github.com/mokiat/gostub
 // should GOPATH be equal to
 //     /Users/user/workspace/Go
 func ImportToDir(imp string) (string, error) {

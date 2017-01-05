@@ -1,6 +1,6 @@
 package acceptance
 
-import "github.com/momchil-atanasov/gostub/acceptance/external"
+import "github.com/mokiat/gostub/acceptance/external"
 
 //go:generate gostub ExternalRefSupport
 

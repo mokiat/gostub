@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"go/ast"
 
-	"github.com/momchil-atanasov/gostub/resolution"
-	"github.com/momchil-atanasov/gostub/util"
+	"github.com/mokiat/gostub/resolution"
+	"github.com/mokiat/gostub/util"
 )
 
 // Config is used to pass a rather large configuration to the
@@ -14,7 +14,7 @@ import (
 type Config struct {
 
 	// SourcePackageLocation specifies the location
-	// (e.g. "github.com/momchil-atanasov/gostub") where the interface
+	// (e.g. "github.com/mokiat/gostub") where the interface
 	// to be stubbed is located.
 	SourcePackageLocation string
 

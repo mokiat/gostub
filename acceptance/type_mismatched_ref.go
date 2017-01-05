@@ -1,6 +1,6 @@
 package acceptance
 
-import "github.com/momchil-atanasov/gostub/acceptance/mismatch"
+import "github.com/mokiat/gostub/acceptance/mismatch"
 
 //go:generate gostub MismatchedRefSupport
 

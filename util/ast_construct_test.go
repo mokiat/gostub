@@ -3,7 +3,7 @@ package util_test
 import (
 	"go/ast"
 
-	. "github.com/momchil-atanasov/gostub/util"
+	. "github.com/mokiat/gostub/util"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

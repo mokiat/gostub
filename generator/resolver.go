@@ -3,8 +3,8 @@ package generator
 import (
 	"go/ast"
 
-	"github.com/momchil-atanasov/gostub/resolution"
-	"github.com/momchil-atanasov/gostub/util"
+	"github.com/mokiat/gostub/resolution"
+	"github.com/mokiat/gostub/util"
 )
 
 func NewResolver(model *GeneratorModel, locator *resolution.Locator) *Resolver {

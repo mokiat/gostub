@@ -4,7 +4,7 @@ import (
 	"go/ast"
 	"go/token"
 
-	. "github.com/momchil-atanasov/gostub/util"
+	. "github.com/mokiat/gostub/util"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

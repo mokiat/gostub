@@ -3,7 +3,7 @@ package generator
 import (
 	"go/ast"
 
-	"github.com/momchil-atanasov/gostub/util"
+	"github.com/mokiat/gostub/util"
 )
 
 func NewMethodMutexFieldBuilder() *MethodMutexFieldBuilder {

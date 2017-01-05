@@ -1,8 +1,8 @@
 package acceptance_test
 
 import (
-	. "github.com/momchil-atanasov/gostub/acceptance"
-	"github.com/momchil-atanasov/gostub/acceptance/acceptance_stubs"
+	. "github.com/mokiat/gostub/acceptance"
+	"github.com/mokiat/gostub/acceptance/acceptance_stubs"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
