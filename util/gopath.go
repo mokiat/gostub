@@ -19,7 +19,7 @@ func DirToImport(p string) (string, error) {
 	return pkg.ImportPath, nil
 }
 
-// ImportToDir convers an import location to a directory path on
+// ImportToDir converts an import location to a directory path on
 // the local machine.
 //
 // For example,
