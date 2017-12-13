@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path"
 	"path/filepath"
 
 	cli "gopkg.in/urfave/cli.v1"
@@ -20,7 +19,7 @@ func RunGoStub(c *cli.Context) {
 	config, err := prepareGeneratorConfig(input)
 	exitOnErr(err)
 
-	err = os.MkdirAll(path.Dir(input.OutputFilePath), 0755)
+	err = os.MkdirAll(filepath.Dir(input.OutputFilePath), 0755)
 	exitOnErr(err)
 
 	err = generator.Generate(config)
@@ -56,11 +55,11 @@ func parseInput(c *cli.Context) (goStubInput, error) {
 
 	outputFileName := c.String("output")
 	if outputFileName == "" {
-		outputFolder := path.Join(sourceDir, path.Base(sourceDir)+"_stubs")
+		outputFolder := filepath.Join(sourceDir, filepath.Base(sourceDir)+"_stubs")
 		outputFile := util.SnakeCase(interfaceName) + "_stub.go"
-		outputFileName = path.Join(outputFolder, outputFile)
+		outputFileName = filepath.Join(outputFolder, outputFile)
 	}
-	if path.Ext(outputFileName) != ".go" {
+	if filepath.Ext(outputFileName) != ".go" {
 		return goStubInput{}, errors.New("The output file needs to have the `go` extension! Run `gostub --help` for more information.")
 	}
 	outputFileName, err = filepath.Abs(outputFileName)
@@ -85,7 +84,7 @@ func prepareGeneratorConfig(input goStubInput) (generator.Config, error) {
 	config.SourcePackageLocation = sourcePackageLocation
 	config.SourceInterfaceName = input.InterfaceName
 	config.TargetFilePath = input.OutputFilePath
-	config.TargetPackageName = path.Base(path.Dir(input.OutputFilePath))
+	config.TargetPackageName = filepath.Base(filepath.Dir(input.OutputFilePath))
 	config.TargetStructName = input.StubName
 	return config, nil
 }
